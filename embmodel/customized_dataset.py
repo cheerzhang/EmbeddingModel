@@ -40,3 +40,43 @@ def create_char_to_idx(texts, special_tokens=['<PAD>', '<UNK>']):
     for idx, token in enumerate(special_tokens):
         char_to_idx[token] = idx
     return char_to_idx  
+
+
+
+
+
+################################################
+#            FE pipeline                       #
+################################################
+import json
+from sklearn.base import BaseEstimator
+
+class ProcessJson(BaseEstimator):
+    def __init__(self, nodes, c_names, f_names):
+        self.name = 'process_json'
+        self.nodes = nodes
+        self.c_names = c_names
+        self.f_names = f_names
+    def fit(self, X, y=None):
+        return self
+    def process_json(self, row, key_names):
+        try:
+            parsed_json = json.loads(row)
+            value = parsed_json
+            for key in key_names:
+                if key in value:
+                    value = value[key]
+                else:
+                    return None
+            return value
+        except (json.JSONDecodeError, TypeError, KeyError):
+            return None
+    def get_feature_from_json(self, df, json_column_name, key_names):
+        return df[json_column_name].apply(self.process_json, args=(key_names,))
+    def transform(self, X, y=None):
+        X_ = X.copy()
+        for i, node in enumerate(self.nodes):
+            X_[self.f_names[i]] = self.get_feature_from_json(X_, self.c_names[i], node)
+        return X_
+
+    
