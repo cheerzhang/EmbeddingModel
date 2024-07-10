@@ -32,6 +32,18 @@ class CDataset(Dataset):
     
         
 
+def max_len_report(df, columns):
+    X_ = df.copy()
+    stats = {}
+    for column in columns:
+        if column in X_.columns.values:
+            lengths = X_[column].apply(len)
+            max_len = lengths.max()
+            q75 = lengths.quantile(0.75)
+            q90 = lengths.quantile(0.90)
+            stats[column] = {'max': max_len, '90q': q90, '75q': q75}
+        else:
+            raise ValueError(f"Missing string feature: {column}")
 
 
 def create_char_to_idx(texts, special_tokens=['<PAD>', '<UNK>']):
