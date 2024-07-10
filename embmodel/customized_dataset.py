@@ -76,7 +76,25 @@ class ProcessJson(BaseEstimator):
     def transform(self, X, y=None):
         X_ = X.copy()
         for i, node in enumerate(self.nodes):
-            X_[self.f_names[i]] = self.get_feature_from_json(X_, self.c_names[i], node)
+            if self.c_names[i] in X_.columns.values:
+                X_[self.f_names[i]] = self.get_feature_from_json(X_, self.c_names[i], node)
+            else:
+                raise ValueError(f"Missing string feature: {self.c_names[i]}")
         return X_
 
+class Filter(BaseEstimator):
+    def __init__(self, c_names, c_values):
+        self.name = 'process_filter'
+        self.c_names = c_names
+        self.c_values = c_values
+    def fit(self, X, y=None):
+        return self
+    def transform(self, X, y=None):
+        X_ = X.copy()
+        for i, c_name in enumerate(self.c_names):
+            if c_name in X_.columns.values:
+                X_ = X_[X_[c_name]==self.c_values[i]]
+            else:
+                raise ValueError(f"Missing string feature: {c_name}")
+        return X_
     
