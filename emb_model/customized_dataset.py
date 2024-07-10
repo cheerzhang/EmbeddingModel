@@ -44,6 +44,7 @@ def max_len_report(df, columns):
             stats[column] = {'max': max_len, '90q': q90, '75q': q75}
         else:
             raise ValueError(f"Missing string feature: {column}")
+    return stats
 
 
 def create_char_to_idx(texts, special_tokens=['<PAD>', '<UNK>']):
