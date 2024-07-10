@@ -31,3 +31,12 @@ class CDataset(Dataset):
         return (*str_features_encoded, *num_features_encoded, torch.tensor([self.target[idx]], dtype=torch.float))
     
         
+
+
+
+def create_char_to_idx(texts, special_tokens=['<PAD>', '<UNK>']):
+    chars = set(''.join(texts))
+    char_to_idx = {char: idx + len(special_tokens) for idx, char in enumerate(chars)}
+    for idx, token in enumerate(special_tokens):
+        char_to_idx[token] = idx
+    return char_to_idx  
