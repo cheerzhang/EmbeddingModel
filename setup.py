@@ -19,7 +19,7 @@ setuptools.setup(
     },
     classifiers=[
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: GPL License",
+        "License :: OSI Approved :: GPL version 3",
         "Operating System :: OS Independent",
     ],
     packages=setuptools.find_packages("."),
