@@ -82,7 +82,7 @@ class ProcessJson(BaseEstimator):
                 raise ValueError(f"Missing string feature: {self.c_names[i]}")
         return X_
 
-class Filter(BaseEstimator):
+class ProcessFilter(BaseEstimator):
     def __init__(self, c_names, c_values):
         self.name = 'process_filter'
         self.c_names = c_names
@@ -97,4 +97,21 @@ class Filter(BaseEstimator):
             else:
                 raise ValueError(f"Missing string feature: {c_name}")
         return X_
+
+import pandas as pd
+class PrcocessDate(BaseEstimator):
+    def __init__(self, c_dates):
+        self.name = 'process_date'
+        self.c_dates = c_dates
+    def fit(self, X, y=None):
+        return self
+    def transform(self, X, y=None):
+        X_ = X.copy()
+        for i, c_name in enumerate(self.c_dates):
+            if c_name in X_.columns.values:
+                X_[c_name] = pd.to_datetime(X_[c_name], errors='coerce')
+            else:
+                raise ValueError(f"Missing string feature: {c_name}")
+        return X_
+
     
