@@ -564,3 +564,18 @@ class CheckData(BaseEstimator):
     def transform(self, X, y=None):
         X_ = X.copy()
         return X_
+    
+class Normalization(BaseEstimator):
+    def __init__(self, c_name, p_value):
+        self.name = 'process_normalization'
+        self.c_name = c_name
+        self.p_value = p_value
+    def fit(self, X, y=None):
+        return self
+    def transform(self, X, y=None):
+        X_ = X.copy()
+        if self.c_name not in X_.columns.values:
+            raise ValueError(f"Missing string feature: {self.c_name}")  
+        else:
+            X_[self.c_name] = X_[self.c_name] / self.p_value
+        return X_
