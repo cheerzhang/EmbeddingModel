@@ -166,6 +166,7 @@ class trainModel:
             'lr': 0.01
         }
         self.model = None
+        self.best_val_loss = float('inf')
     def set_train_parameter(self, batch_size=32, dimN=128, patience=10, lr=0.01):
         self.train_prameter['batch_size'] = batch_size
         self.train_prameter['dimN'] = dimN
@@ -199,7 +200,7 @@ class trainModel:
         optimizer = optim.Adam(self.model.parameters(), lr=self.train_prameter['lr'], weight_decay=1e-4) # Adjust learning rate and weight decay as needed
         scheduler = ReduceLROnPlateau(optimizer, 'min', patience=2, factor=0.7, verbose=True)
         early_stopping = EarlyStopping(patience=self.train_prameter['patience'], verbose=True)
-        num_epochs = 10 # Define the number of epochs
+        num_epochs = 1000 # Define the number of epochs
         train_losses_list = []
         val_losses_list = []
         for epoch in range(num_epochs):
