@@ -1,5 +1,8 @@
 import torch
 from torch.utils.data import DataLoader, Dataset
+import torch.nn as nn
+import torch.nn.functional as F
+import math
 
 
 class CDataset(Dataset):
@@ -55,6 +58,112 @@ def create_char_to_idx(texts, special_tokens=['<PAD>', '<UNK>']):
     for idx, token in enumerate(special_tokens):
         char_to_idx[token] = idx
     return char_to_idx  
+
+################################################
+#            Traom Models                      #
+################################################
+class PositionalEncoding(nn.Module):
+    def __init__(self, dimN, max_len=5000):
+        super(PositionalEncoding, self).__init__()
+        pe = torch.zeros(max_len, dimN)
+        position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, dimN, 2).float() * (-math.log(10000.0) / dimN))
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+        pe = pe.unsqueeze(0).transpose(0, 1)
+        self.register_buffer('pe', pe)
+    def forward(self, x):
+        return x + self.pe[:x.size(0), :]
+
+class CharTransformerModel(nn.Module):
+    def __init__(self, embN, dimN, nhead, num_layers, max_lens, str_features, num_features):
+        super(CharTransformerModel, self).__init__()
+        self.embeddings = nn.Embedding(num_embeddings=embN, embedding_dim=dimN)
+        # 动态创建位置编码器
+        self.pos_encoders = nn.ModuleDict({
+            feature: PositionalEncoding(dimN, max_lens[feature]) for feature in str_features
+        })
+        encoder_layers = nn.TransformerEncoderLayer(d_model=dimN, nhead=nhead)
+        self.transformer_encoder = nn.TransformerEncoder(encoder_layers, num_layers=num_layers)
+        
+        self.classifier = nn.Sequential(
+            nn.Linear(11*dimN + 11, 1024),
+            nn.BatchNorm1d(1024),
+            nn.ReLU(),
+            nn.Dropout(0.4),
+            nn.Linear(1024, 512),
+            nn.BatchNorm1d(512),
+            nn.ReLU(),
+            nn.Dropout(0.4), 
+            nn.Linear(512, 256),
+            nn.BatchNorm1d(256),
+            nn.ReLU(),
+            nn.Dropout(0.4),
+            nn.Linear(256, 128),
+            nn.BatchNorm1d(128),
+            nn.ReLU(),
+            nn.Dropout(0.4),
+            nn.Linear(128, 64),
+            nn.BatchNorm1d(64),
+            nn.ReLU(),
+            nn.Dropout(0.4),
+            nn.Linear(64, 32),
+            nn.BatchNorm1d(32),
+            nn.ReLU(),
+            nn.Dropout(0.4),
+            nn.Linear(32, 4)  # 4个类别
+        )
+    def forward(self, str_features, num_features):
+        str_feature_outputs = []
+        # 处理每个字符串特征
+        for feature_name, feature_tensor in str_features.items():
+            embedded = self.embeddings(feature_tensor).permute(1, 0, 2)
+            pos_encoded = self.pos_encoders[feature_name](embedded)
+            transformer_output = self.transformer_encoder(pos_encoded)
+            feature_output = transformer_output.mean(dim=0)
+            str_feature_outputs.append(feature_output)
+
+        # 将所有字符串特征和数值特征连接在一起
+        combined_features = torch.cat(str_feature_outputs + list(num_features.values()), dim=1)
+        normalized_features = F.normalize(combined_features, p=2, dim=1)
+        output = self.classifier(normalized_features)   
+        return output
+        
+
+class trainModel:
+    def __init__(self, train_dataset, valid_dataset):
+        self.train_dataset = train_dataset
+        self.valid_dataset = valid_dataset
+        self.train_dataloader = None
+        self.val_dataloader = None
+        self.train_dataloader = None
+        self.val_dataloader = None
+        self.train_prameter = {
+            'batch_size': 32,
+            'dimN': 128
+        }
+        self.model = None
+    def set_train_parameter(self, batch_size=32, dimN=128):
+        self.train_prameter['batch_size'] = batch_size
+        self.train_prameter['dimN'] = dimN
+        return self.train_prameter
+    def prepare_data(self):
+        self.train_dataloader = DataLoader(self.train_dataset, batch_size=self.train_prameter['batch_size'], shuffle=True)
+        self.val_dataloader = DataLoader(self.valid_dataset, batch_size=self.train_prameter['batch_size'], shuffle=False)
+    def train(self, char_to_idx, max_len, str_features, num_features):
+        if torch.backends.mps.is_available() and torch.backends.mps.is_built():
+            device = torch.device("mps")
+        else:
+            device = torch.device("cpu")
+        self.model = CharTransformerModel(embN=len(char_to_idx),
+                                          dimN=self.train_prameter['dimN'], 
+                                          nhead=8, 
+                                          num_layers=3, 
+                                          max_lens=max_len, 
+                                          str_features=str_features, 
+                                          num_features=num_features).to(device)
+        
+
 
 
 
