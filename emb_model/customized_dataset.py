@@ -16,7 +16,7 @@ class CDataset(Dataset):
         char_to_idx: Dict, a mapping from character to index
         max_lens: Dict, a mapping from feature name to maximum length
         """
-        self.str_features = str_features
+        self.str_features = {name: features for name, features in zip(max_lens.keys(), str_features)}
         self.num_features = num_features
         self.target = target
         self.char_to_idx = char_to_idx
@@ -25,9 +25,9 @@ class CDataset(Dataset):
         return len(self.target)
     def __getitem__(self, idx):
         str_features_encoded = []
-        for i, str_feature in enumerate(self.str_features):
+        for feature_name, str_feature in self.str_features.items():
             encode = [self.char_to_idx.get(char, self.char_to_idx['<UNK>']) for char in str_feature[idx]]
-            padded_encode = encode[:self.max_lens[str_feature]] + [self.char_to_idx['<PAD>']] * max(0, self.max_lens[str_feature] - len(encode))
+            padded_encode = encode[:self.max_lens[feature_name]] + [self.char_to_idx['<PAD>']] * max(0, self.max_lens[feature_name] - len(encode))
             str_features_encoded.append(torch.tensor(padded_encode, dtype=torch.long))
         num_features_encoded = [torch.tensor([num_feature[idx]], dtype=torch.float) for num_feature in self.num_features]
 
