@@ -64,7 +64,7 @@ def create_char_to_idx(texts, special_tokens=['<PAD>', '<UNK>']):
 import json
 from sklearn.base import BaseEstimator
 from datetime import datetime
-
+import numpy as np
 
 class ProcessJson(BaseEstimator):
     def __init__(self, nodes, c_names, f_names):
@@ -250,7 +250,7 @@ class ProcessDInDate(BaseEstimator):
 
 
 class CheckData(BaseEstimator):
-    def __init__(self, max_columns):
+    def __init__(self, max_columns=None):
         self.name = 'check_data'
         self.na_inf_result = None
         self.max_columns = max_columns
@@ -283,8 +283,9 @@ class CheckData(BaseEstimator):
     def fit(self, X, y=None):
         na_inf_result = self.check_nan_inf(X)
         self.na_inf_result = na_inf_result
-        max_len = self.max_len_report(X, self.max_columns)
-        self.max_len_result = max_len
+        if self.max_columns is not None:
+            max_len = self.max_len_report(X, self.max_columns)
+            self.max_len_result = max_len
         return self
     def transform(self, X, y=None):
         X_ = X.copy()
