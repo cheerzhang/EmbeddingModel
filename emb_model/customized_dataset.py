@@ -162,13 +162,15 @@ class trainModel:
         self.train_prameter = {
             'batch_size': 32,
             'dimN': 128,
-            'patience': 10
+            'patience': 10,
+            'lr': 0.01
         }
         self.model = None
-    def set_train_parameter(self, batch_size=32, dimN=128, patience=10):
+    def set_train_parameter(self, batch_size=32, dimN=128, patience=10, lr=0.01):
         self.train_prameter['batch_size'] = batch_size
         self.train_prameter['dimN'] = dimN
         self.train_prameter['patience'] = patience
+        self.train_prameter['lr'] = lr
         return self.train_prameter
     def prepare_data(self):
         self.train_dataloader = DataLoader(self.train_dataset, batch_size=self.train_prameter['batch_size'], shuffle=True)
