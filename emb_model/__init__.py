@@ -8,12 +8,14 @@ from .customized_dataset import ProcessAge
 from .customized_dataset import ProcessCombineFE
 from .customized_dataset import ProcessSplitFE
 from .customized_dataset import create_char_to_idx, max_len_report
+from .customized_dataset import CheckData
 
 __all__ = ['CDataset', 'create_char_to_idx', 'max_len_report',
         'ProcessJson', 'ProcessFilter', 'ProcessStr', 'ProcessNumer',
         'ProcessAge', 'PrcocessDate', 'ProcessDInDate',
-        'ProcessCombineFE', 'ProcessSplitFE']
-__dataset__ = ['CDataset', 'create_char_to_idx', 'max_len_report']
+        'ProcessCombineFE', 'ProcessSplitFE',
+        'CheckData']
+__dataset__ = ['CDataset', 'create_char_to_idx', 'max_len_report', 'CheckData']
 __fe__ = ['ProcessJson', 'ProcessFilter', 'ProcessStr', 'ProcessCombineFE', 
           'ProcessAge', 'PrcocessDate', 'ProcessNumer', 'ProcessSplitFE',
           'ProcessDInDate']

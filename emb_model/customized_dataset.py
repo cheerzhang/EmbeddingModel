@@ -58,8 +58,6 @@ def create_char_to_idx(texts, special_tokens=['<PAD>', '<UNK>']):
 
 
 
-
-
 ################################################
 #            FE pipeline                       #
 ################################################
@@ -165,6 +163,7 @@ class ProcessAge(BaseEstimator):
         X_ = X.copy()
         if self.c_name in X_.columns.values:
             X_["age"] = X_.apply(self.calculate_age_, axis=1)
+            X_["age"] = X_["age"].fillna(-1)
         else:
             raise ValueError(f"Missing string feature: {self.c_name}")
         return X_
@@ -247,4 +246,46 @@ class ProcessDInDate(BaseEstimator):
                 X_[f"{self.date_column}_{self.period}"] = X_[self.date_column].dt.hour
             if self.period == 'w':
                 X_[f"{self.date_column}_{self.period}"] = X_[self.date_column].dt.weekday
+        return X_
+
+
+class CheckData(BaseEstimator):
+    def __init__(self, max_columns):
+        self.name = 'check_data'
+        self.na_inf_result = None
+        self.max_columns = max_columns
+        self.max_len_result = None
+    def check_nan_inf(self, df):
+        result = {}
+        for col in df.columns:
+            nans = df[col].isna().sum()
+            infs = 0
+            if pd.api.types.is_numeric_dtype(df[col]):
+                infs = np.isinf(df[col]).sum()
+            if nans > 0 or infs > 0:
+                result[col] = {'NaN': nans, 'Inf': infs}
+        return result
+    def max_len_report(self, df, columns):
+        X_ = df.copy()
+        stats = {}
+        for column in columns:
+            if column in X_.columns.values:
+                lengths = X_[column].apply(len)
+                max_len = lengths.max()
+                q75 = lengths.quantile(0.75)
+                q90 = lengths.quantile(0.90)
+                q95 = lengths.quantile(0.95)
+                q99 = lengths.quantile(0.99)
+                stats[column] = {'max': max_len, '99q': q99, '95q': q95, '90q': q90, '75q': q75}
+            else:
+                raise ValueError(f"Missing string feature: {column}")
+        return stats
+    def fit(self, X, y=None):
+        na_inf_result = self.check_nan_inf(X)
+        self.na_inf_result = na_inf_result
+        max_len = self.max_len_report(X, self.max_columns)
+        self.max_len_result = max_len
+        return self
+    def transform(self, X, y=None):
+        X_ = X.copy()
         return X_
