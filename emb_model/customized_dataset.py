@@ -42,7 +42,8 @@ def max_len_report(df, columns):
             q75 = lengths.quantile(0.75)
             q90 = lengths.quantile(0.90)
             q95 = lengths.quantile(0.95)
-            stats[column] = {'max': max_len, '95q': q95, '90q': q90, '75q': q75}
+            q99 = lengths.quantile(0.99)
+            stats[column] = {'max': max_len, '99q': q99, '95q': q95, '90q': q90, '75q': q75}
         else:
             raise ValueError(f"Missing string feature: {column}")
     return stats
@@ -64,6 +65,8 @@ def create_char_to_idx(texts, special_tokens=['<PAD>', '<UNK>']):
 ################################################
 import json
 from sklearn.base import BaseEstimator
+from datetime import datetime
+
 
 class ProcessJson(BaseEstimator):
     def __init__(self, nodes, c_names, f_names):
@@ -127,6 +130,27 @@ class ProcessStr(BaseEstimator):
             else:
                 raise ValueError(f"Missing string feature: {c_name}")
         return X_
+
+class ProcessAge(BaseEstimator):
+    def __init__(self, c_birthdate):
+        self.name = 'process_age'
+        self.c_name = c_birthdate
+    def fit(self, X, y=None):
+        return self
+    def calculate_age_(self, row):
+        current_date = datetime.now()
+        age = current_date.year - row[self.c_name].year
+        if row[self.c_name].month > current_date.month:
+            age -= 1
+        return age
+    def transform(self, X, y=None):
+        X_ = X.copy()
+        if self.c_name in X_.columns.values:
+            X_["age"] = X_.apply(self.calculate_age_, axis=1)
+        else:
+            raise ValueError(f"Missing string feature: {self.c_name}")
+        return X_
+    
 
 import pandas as pd
 class PrcocessDate(BaseEstimator):
