@@ -131,6 +131,22 @@ class ProcessStr(BaseEstimator):
                 raise ValueError(f"Missing string feature: {c_name}")
         return X_
 
+
+class ProcessNumer(BaseEstimator):
+    def __init__(self, c_names):
+        self.name = 'process_number'
+        self.c_names = c_names
+    def fit(self, X, y=None):
+        return self
+    def transform(self, X, y=None):
+        X_ = X.copy()
+        for i, c_name in enumerate(self.c_names):
+            if c_name in X_.columns.values:
+                X_[c_name] = pd.to_numeric(X_[c_name], errors='coerce')
+                raise ValueError(f"Missing string feature: {c_name}")
+        return X_
+
+
 class ProcessAge(BaseEstimator):
     def __init__(self, c_birthdate):
         self.name = 'process_age'
