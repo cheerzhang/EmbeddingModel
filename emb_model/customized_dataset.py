@@ -2,6 +2,8 @@ import torch
 from torch.utils.data import DataLoader, Dataset
 import torch.nn as nn
 import torch.nn.functional as F
+import torch.optim as optim
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 import math
 
 
@@ -129,6 +131,25 @@ class CharTransformerModel(nn.Module):
         output = self.classifier(normalized_features)   
         return output
         
+class EarlyStopping:
+    def __init__(self, patience=10, verbose=False):
+        self.patience = patience
+        self.verbose = verbose
+        self.counter = 0
+        self.best_loss = None
+        self.early_stop = False
+    def __call__(self, val_loss):
+        if self.best_loss is None:
+            self.best_loss = val_loss
+        elif val_loss >= self.best_loss:
+            self.counter += 1
+            if self.verbose:
+                print(f"EarlyStopping counter: {self.counter} out of {self.patience}")
+            if self.counter >= self.patience:
+                self.early_stop = True
+        else:
+            self.best_loss = val_loss
+            self.counter = 0
 
 class trainModel:
     def __init__(self, train_dataset, valid_dataset):
@@ -140,16 +161,25 @@ class trainModel:
         self.val_dataloader = None
         self.train_prameter = {
             'batch_size': 32,
-            'dimN': 128
+            'dimN': 128,
+            'patience': 10
         }
         self.model = None
-    def set_train_parameter(self, batch_size=32, dimN=128):
+    def set_train_parameter(self, batch_size=32, dimN=128, patience=10):
         self.train_prameter['batch_size'] = batch_size
         self.train_prameter['dimN'] = dimN
+        self.train_prameter['patience'] = patience
         return self.train_prameter
     def prepare_data(self):
         self.train_dataloader = DataLoader(self.train_dataset, batch_size=self.train_prameter['batch_size'], shuffle=True)
         self.val_dataloader = DataLoader(self.valid_dataset, batch_size=self.train_prameter['batch_size'], shuffle=False)
+    def get_class_weight(self, df, label_columns):
+        labels = np.array(df[label_columns].values)
+        class_sample_counts = np.bincount(labels)
+        total_samples = len(labels)
+        class_weights = total_samples / (len(class_sample_counts) * class_sample_counts)
+        self.class_weights = class_weights
+        return class_weights
     def train(self, char_to_idx, max_len, str_features, num_features):
         if torch.backends.mps.is_available() and torch.backends.mps.is_built():
             device = torch.device("mps")
@@ -162,7 +192,34 @@ class trainModel:
                                           max_lens=max_len, 
                                           str_features=str_features, 
                                           num_features=num_features).to(device)
-        
+        class_weights = torch.tensor(self.class_weights, dtype=torch.float).to(device)
+        self.criterion = nn.CrossEntropyLoss(weight=class_weights)
+        optimizer = optim.Adam(self.model.parameters(), lr=self.train_prameter['lr'], weight_decay=1e-4) # Adjust learning rate and weight decay as needed
+        scheduler = ReduceLROnPlateau(optimizer, 'min', patience=2, factor=0.7, verbose=True)
+        early_stopping = EarlyStopping(patience=self.train_prameter['patience'], verbose=True)
+        num_epochs = 10 # Define the number of epochs
+        train_losses_list = []
+        val_losses_list = []
+        for epoch in range(num_epochs):
+            self.model.train()
+            train_losses = []
+            for batch in self.train_dataloader:
+                str_features_batch = {name: batch[i].to(device) for i, name in enumerate(str_features)}
+                num_features_batch = {name: batch[i + len(str_features)].to(device) for i, name in enumerate(num_features)}
+                targets = batch[-1].to(device).squeeze()
+                print(str_features_batch)
+                print(num_features_batch)
+                print(targets)
+                
+                optimizer.zero_grad()
+                output = self.model(str_features_batch, num_features_batch)
+                loss = self.criterion(output, targets)  # Assuming `targets` is provided
+                loss.backward()
+                optimizer.step()
+                train_losses.append(loss.item())
+            train_loss = sum(train_losses) / len(train_losses)
+            train_losses_list.append(train_loss)
+        self.train_losses_list = train_losses_list
 
 
 
