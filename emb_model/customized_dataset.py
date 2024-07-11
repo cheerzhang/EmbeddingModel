@@ -41,7 +41,8 @@ def max_len_report(df, columns):
             max_len = lengths.max()
             q75 = lengths.quantile(0.75)
             q90 = lengths.quantile(0.90)
-            stats[column] = {'max': max_len, '90q': q90, '75q': q75}
+            q95 = lengths.quantile(0.95)
+            stats[column] = {'max': max_len, '95q': q95, '90q': q90, '75q': q75}
         else:
             raise ValueError(f"Missing string feature: {column}")
     return stats
@@ -107,6 +108,22 @@ class ProcessFilter(BaseEstimator):
         for i, c_name in enumerate(self.c_names):
             if c_name in X_.columns.values:
                 X_ = X_[X_[c_name]==self.c_values[i]]
+            else:
+                raise ValueError(f"Missing string feature: {c_name}")
+        return X_
+
+class ProcessStr(BaseEstimator):
+    def __init__(self, c_names):
+        self.name = 'process_str'
+        self.c_names = c_names
+    def fit(self, X, y=None):
+        return self
+    def transform(self, X, y=None):
+        X_ = X.copy()
+        for i, c_name in enumerate(self.c_names):
+            if c_name in X_.columns.values:
+                X_[c_name] = X_[c_name].fillna('')
+                X_[c_name] = X_[c_name].astype(str).str.lower().str.strip().str.replace("\s+", "", regex=True)
             else:
                 raise ValueError(f"Missing string feature: {c_name}")
         return X_
