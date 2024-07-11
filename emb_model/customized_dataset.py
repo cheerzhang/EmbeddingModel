@@ -143,6 +143,7 @@ class ProcessNumer(BaseEstimator):
         for i, c_name in enumerate(self.c_names):
             if c_name in X_.columns.values:
                 X_[c_name] = pd.to_numeric(X_[c_name], errors='coerce')
+                X_[c_name] = X_[c_name].fillna(-1)
                 raise ValueError(f"Missing string feature: {c_name}")
         return X_
 
@@ -184,4 +185,22 @@ class PrcocessDate(BaseEstimator):
                 raise ValueError(f"Missing string feature: {c_name}")
         return X_
 
+
+class ProcessCombineFE(BaseEstimator):
+    def __init__(self, c_names, n_name):
+        self.name = 'process_combine_fe'
+        self.c_names = c_names
+        self.n_name = n_name
+    def fit(self, X, y=None):
+        return self
+    def transform(self, X, y=None):
+        X_ = X.copy()
+        X_[self.n_name] = ''
+        for i, c_name in enumerate(self.c_names):
+            if c_name not in X_.columns.values:
+                raise ValueError(f"Missing string feature: {c_name}")
+            else:
+                X_[self.n_name] = X_[self.n_name] + ' ' + X_[c_name]
+        X_[self.n_name] = X_[self.n_name].apply(lambda x: x[1:] if isinstance(x, str) and len(x) > 0 else x)
+        return X_
     
