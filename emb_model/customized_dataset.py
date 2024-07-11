@@ -209,10 +209,6 @@ class trainModel:
                 str_features_batch = {name: batch[i].to(device) for i, name in enumerate(str_features)}
                 num_features_batch = {name: batch[i + len(str_features)].to(device) for i, name in enumerate(num_features)}
                 targets = batch[-1].to(device).squeeze()
-                print(str_features_batch)
-                print(num_features_batch)
-                print(targets)
-                
                 optimizer.zero_grad()
                 output = self.model(str_features_batch, num_features_batch)
                 loss = self.criterion(output, targets)  # Assuming `targets` is provided
@@ -221,7 +217,36 @@ class trainModel:
                 train_losses.append(loss.item())
             train_loss = sum(train_losses) / len(train_losses)
             train_losses_list.append(train_loss)
+            # eval
+            self.model.eval()
+            val_losses = []
+            with torch.no_grad():
+                for batch in self.val_dataloader:
+                    str_features_batch = {name: batch[i].to(device) for i, name in enumerate(str_features)}
+                    num_features_batch = {name: batch[i + len(str_features)].to(device) for i, name in enumerate(num_features)}
+                    targets = batch[-1].to(device).squeeze()
+                    output = self.model(str_features_batch, num_features_batch)
+                    loss = self.criterion(output, targets)
+                    val_losses.append(loss.item())
+            val_loss = sum(val_losses) / len(val_losses)
+            val_losses_list.append(val_loss)
+            # check if this is the best model
+            if val_loss < self.best_val_loss:
+                self.best_val_loss = val_loss
+                torch.save(self.model.state_dict(), self.best_model_path)
+                print(f"Best model saved with validation loss: {val_loss:.6f}")
+            # early stop
+            if epoch % 1 == 0:
+                print(f'Epoch {epoch}, Loss: {train_loss}, {val_loss}')
+            early_stopping(val_loss)
+            if early_stopping.early_stop:
+                print("Early stopping")
+                break
+            # Update the learning rate
+            scheduler.step(val_loss)
         self.train_losses_list = train_losses_list
+        self.val_losses_list = val_losses_list
+        return train_losses_list, val_losses_list
 
 
 
