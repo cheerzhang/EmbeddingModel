@@ -144,6 +144,7 @@ class ProcessNumer(BaseEstimator):
             if c_name in X_.columns.values:
                 X_[c_name] = pd.to_numeric(X_[c_name], errors='coerce')
                 X_[c_name] = X_[c_name].fillna(-1)
+            else:
                 raise ValueError(f"Missing string feature: {c_name}")
         return X_
 
@@ -203,4 +204,21 @@ class ProcessCombineFE(BaseEstimator):
                 X_[self.n_name] = X_[self.n_name] + ' ' + X_[c_name]
         X_[self.n_name] = X_[self.n_name].apply(lambda x: x[1:] if isinstance(x, str) and len(x) > 0 else x)
         return X_
-    
+
+
+class ProcessSplitFE(BaseEstimator):
+    def __init__(self, c_name, n_name, s_split, n_part):
+        self.name = 'process_split_fe'
+        self.c_name = c_name
+        self.s_split = s_split
+        self.n_part = n_part
+        self.n_name = n_name
+    def fit(self, X, y=None):
+        return self
+    def transform(self, X, y=None):
+        X_ = X.copy()
+        if self.c_name not in X_.columns.values:
+            raise ValueError(f"Missing string feature: {self.c_name}")
+        else:
+            X_[self.n_name] = X_[self.c_name].split(self.s_split)[self.n_part]
+        return X_
