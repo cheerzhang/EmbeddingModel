@@ -291,7 +291,22 @@ class trainModel:
             'confusion_matrix': conf_matrix
         }
         return self.metrix
-
+    def eval_binary(self, y_true, y_pred):
+        if isinstance(y_true, torch.Tensor):
+            y_true = y_true.cpu().detach().numpy()
+        if isinstance(y_pred, torch.Tensor):
+            y_pred = y_pred.cpu().detach().numpy()
+        accuracy = accuracy_score(y_true, y_pred)
+        precision = precision_score(y_true, y_pred)
+        recall = recall_score(y_true, y_pred)
+        f1 = f1_score(y_true, y_pred)
+        results = {
+            "Precision": precision,
+            "Recall": recall,
+            "F1": f1,
+            "accuracy": accuracy
+        }
+        return results
 
 
 
