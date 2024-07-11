@@ -207,12 +207,13 @@ class ProcessCombineFE(BaseEstimator):
 
 
 class ProcessSplitFE(BaseEstimator):
-    def __init__(self, c_name, n_name, s_split, n_part):
+    def __init__(self, c_name, n_name, s_split, n_part, fillna=None):
         self.name = 'process_split_fe'
         self.c_name = c_name
         self.s_split = s_split
         self.n_part = n_part
         self.n_name = n_name
+        self.fillna = fillna
     def fit(self, X, y=None):
         return self
     def transform(self, X, y=None):
@@ -220,5 +221,30 @@ class ProcessSplitFE(BaseEstimator):
         if self.c_name not in X_.columns.values:
             raise ValueError(f"Missing string feature: {self.c_name}")
         else:
-            X_[self.n_name] = X_[self.c_name].split(self.s_split)[self.n_part]
+            X_[self.n_name] = X_[self.c_name].apply(lambda x: x.split(self.s_split)[self.n_part] if len(x.split(self.s_split)) > self.n_part else self.fillna)
+        return X_
+
+
+class ProcessDInDate(BaseEstimator):
+    def __init__(self, date_column, period):
+        self.name = 'get_date_from_date'
+        self.date_column = date_column
+        self.period = period
+    def fit(self, X, y=None):
+        return self
+    def transform(self, X, y=None):
+        X_ = X.copy()
+        if self.date_column not in X_.columns.values:
+            raise ValueError(f"Missing string feature: {self.date_column}")   
+        else:
+            if self.period == 'D':
+                X_[f"{self.date_column}_{self.period}"] = X_[self.date_column].dt.day
+            if self.period == 'M':
+                X_[f"{self.date_column}_{self.period}"] = X_[self.date_column].dt.month
+            if self.period == 'Y':
+                X_[f"{self.date_column}_{self.period}"] = X_[self.date_column].dt.year
+            if self.period == 'h':
+                X_[f"{self.date_column}_{self.period}"] = X_[self.date_column].dt.hour
+            if self.period == 'w':
+                X_[f"{self.date_column}_{self.period}"] = X_[self.date_column].dt.weekday
         return X_
