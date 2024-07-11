@@ -27,7 +27,7 @@ class CDataset(Dataset):
         str_features_encoded = []
         for i, str_feature in enumerate(self.str_features):
             encode = [self.char_to_idx.get(char, self.char_to_idx['<UNK>']) for char in str_feature[idx]]
-            padded_encode = encode[:self.max_lens[str_feature]] + [self.char_to_idx['<PAD>']] * max(0, self.max_lens[i] - len(encode))
+            padded_encode = encode[:self.max_lens[str_feature]] + [self.char_to_idx['<PAD>']] * max(0, self.max_lens[str_feature] - len(encode))
             str_features_encoded.append(torch.tensor(padded_encode, dtype=torch.long))
         num_features_encoded = [torch.tensor([num_feature[idx]], dtype=torch.float) for num_feature in self.num_features]
 
