@@ -21,4 +21,4 @@ __dataset__ = ['CDataset', 'create_char_to_idx', 'max_len_report', 'CheckData']
 __fe__ = ['ProcessJson', 'ProcessFilter', 'ProcessStr', 'ProcessCombineFE', 
           'ProcessAge', 'PrcocessDate', 'ProcessNumer', 'ProcessSplitFE',
           'ProcessDInDate']
-__models__ = ['trainModel']
+__models__ = ['trainModel', 'CharTransformerModel']

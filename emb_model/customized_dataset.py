@@ -8,6 +8,7 @@ import math
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
 
 
+
 class CDataset(Dataset):
     def __init__(self, 
         str_features, num_features,
@@ -486,12 +487,14 @@ class ProcessDInDate(BaseEstimator):
 
 
 class CheckData(BaseEstimator):
-    def __init__(self, check_columns=None, max_columns=None):
+    def __init__(self, check_columns=None, maxlen_columns=None, maxnum_columns=None):
         self.name = 'check_data'
         self.na_inf_result = None
-        self.max_columns = max_columns
+        self.maxlen_columns = maxlen_columns
         self.max_len_result = None
         self.check_columns = check_columns
+        self.maxnum_columns = maxnum_columns
+        self.max_number_result = None
     def check_nan_inf(self, df, columns):
         result = {}
         for col in columns:
@@ -517,13 +520,31 @@ class CheckData(BaseEstimator):
             else:
                 raise ValueError(f"Missing string feature: {column}")
         return stats
+    def max_number_report(self, df, columns):
+        X_ = df.copy()
+        stats = {}
+        for column in columns:
+            if column in X_.columns.values:
+                value_ = X_[column]
+                max_number = X_[column].max()
+                q75 = value_.quantile(0.75)
+                q90 = value_.quantile(0.90)
+                q95 = value_.quantile(0.95)
+                q99 = value_.quantile(0.99)
+                stats[column] = {'max': max_number, '99q': q99, '95q': q95, '90q': q90, '75q': q75}
+            else:
+                raise ValueError(f"Missing string feature: {column}")
+        return stats
     def fit(self, X, y=None):
         if self.check_columns is not None:
             na_inf_result = self.check_nan_inf(X, self.check_columns)
             self.na_inf_result = na_inf_result
-        if self.max_columns is not None:
-            max_len = self.max_len_report(X, self.max_columns)
+        if self.maxlen_columns is not None:
+            max_len = self.max_len_report(X, self.maxlen_columns)
             self.max_len_result = max_len
+        if self.maxnum_columns is not None:
+            max_v = self.max_number_report(X, self.maxnum_columns)
+            self.max_number_result = max_v
         return self
     def transform(self, X, y=None):
         X_ = X.copy()
