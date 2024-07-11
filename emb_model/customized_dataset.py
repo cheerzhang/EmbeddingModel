@@ -167,11 +167,13 @@ class trainModel:
         }
         self.model = None
         self.best_val_loss = float('inf')
-    def set_train_parameter(self, batch_size=32, dimN=128, patience=10, lr=0.01):
+    def set_train_parameter(self, batch_size=32, dimN=128, patience=10, lr=0.01,
+                            best_model_path="best_model.pth"):
         self.train_prameter['batch_size'] = batch_size
         self.train_prameter['dimN'] = dimN
         self.train_prameter['patience'] = patience
         self.train_prameter['lr'] = lr
+        self.best_model_path = best_model_path
         return self.train_prameter
     def prepare_data(self):
         self.train_dataloader = DataLoader(self.train_dataset, batch_size=self.train_prameter['batch_size'], shuffle=True)
