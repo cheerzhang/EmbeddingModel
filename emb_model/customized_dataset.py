@@ -250,14 +250,15 @@ class ProcessDInDate(BaseEstimator):
 
 
 class CheckData(BaseEstimator):
-    def __init__(self, max_columns=None):
+    def __init__(self, check_columns=None, max_columns=None):
         self.name = 'check_data'
         self.na_inf_result = None
         self.max_columns = max_columns
         self.max_len_result = None
-    def check_nan_inf(self, df):
+        self.check_columns = check_columns
+    def check_nan_inf(self, df, columns):
         result = {}
-        for col in df.columns:
+        for col in columns:
             nans = df[col].isna().sum()
             infs = 0
             if pd.api.types.is_numeric_dtype(df[col]):
@@ -281,8 +282,9 @@ class CheckData(BaseEstimator):
                 raise ValueError(f"Missing string feature: {column}")
         return stats
     def fit(self, X, y=None):
-        na_inf_result = self.check_nan_inf(X)
-        self.na_inf_result = na_inf_result
+        if self.check_columns is not None:
+            na_inf_result = self.check_nan_inf(X, self.check_columns)
+            self.na_inf_result = na_inf_result
         if self.max_columns is not None:
             max_len = self.max_len_report(X, self.max_columns)
             self.max_len_result = max_len
