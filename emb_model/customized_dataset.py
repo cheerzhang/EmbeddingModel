@@ -5,6 +5,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 import math
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
 
 
 class CDataset(Dataset):
@@ -249,7 +250,46 @@ class trainModel:
             scheduler.step(val_loss)
         self.train_losses_list = train_losses_list
         self.val_losses_list = val_losses_list
+        # eval model
+        self.model_eval(self.val_dataloader, char_to_idx, max_len, str_features, num_features)
         return train_losses_list, val_losses_list
+    def model_eval(self, val_dataloader, char_to_idx, max_len, str_features, num_features):
+        self.model = CharTransformerModel(embN=len(char_to_idx),
+                                          dimN=self.train_prameter['dimN'], 
+                                          nhead=8, 
+                                          num_layers=3, 
+                                          max_lens=max_len, 
+                                          str_features=str_features, 
+                                          num_features=num_features)
+        self.model.load_state_dict(torch.load(self.best_model_path))
+        self.model.eval()
+        self.model.to('cpu')
+        val_losses = []
+        all_preds = []
+        all_targets = []
+        with torch.no_grad():
+            for batch in val_dataloader:
+                str_features_batch = {name: batch[i].to('cpu') for i, name in enumerate(str_features)}
+                num_features_batch = {name: batch[i + len(str_features)].to('cpu') for i, name in enumerate(num_features)}
+                targets = batch[-1].to('cpu').squeeze()
+                output = self.model(str_features_batch, num_features_batch)
+                preds = torch.argmax(output, dim=1)
+                all_preds.extend(preds.cpu().numpy())
+                all_targets.extend(targets.cpu().numpy())
+        accuracy = accuracy_score(all_targets, all_preds)
+        precision = precision_score(all_targets, all_preds, average='weighted')
+        recall = recall_score(all_targets, all_preds, average='weighted')
+        f1 = f1_score(all_targets, all_preds, average='weighted')
+        conf_matrix = confusion_matrix(all_targets, all_preds)
+        # print(f'Validation Loss: {val_loss:.4f}')
+        self.metrix = {
+            'accuracy': accuracy,
+            'precision': precision,
+            'recall': recall,
+            'f1_score': f1,
+            'confusion_matrix': conf_matrix
+        }
+        return self.metrix
 
 
 
