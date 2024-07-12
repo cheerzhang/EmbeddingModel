@@ -4,8 +4,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-import math
+import math, os, shutil, pkg_resources
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
+
 
 
 
@@ -165,7 +166,8 @@ class trainModel:
             'batch_size': 32,
             'dimN': 128,
             'patience': 10,
-            'lr': 0.01
+            'lr': 0.01,
+            'char_to_idx': {}
         }
         self.model = None
         self.best_val_loss = float('inf')
@@ -188,6 +190,7 @@ class trainModel:
         self.class_weights = class_weights
         return class_weights
     def train(self, char_to_idx, max_len, str_features, num_features):
+        self.train_prameter['char_to_idx'] = char_to_idx
         if torch.backends.mps.is_available() and torch.backends.mps.is_built():
             device = torch.device("mps")
         else:
@@ -307,7 +310,13 @@ class trainModel:
             "accuracy": accuracy
         }
         return results
-
+    def get_env_file(self):
+        # 获取资源文件的路径
+        resource_path = pkg_resources.resource_filename(__name__, f'resources/embedding_env.yaml')
+        if not os.path.exists(resource_path):
+            raise FileNotFoundError(f"Resource file embedding_env.yaml not found in package.")
+        shutil.copy(resource_path, os.getcwd())
+        print(f"File embedding_env has been copied to {os.getcwd()}")
 
 
 ################################################
@@ -565,7 +574,7 @@ class CheckData(BaseEstimator):
         X_ = X.copy()
         return X_
     
-class Normalization(BaseEstimator):
+class ProcessNorm(BaseEstimator):
     def __init__(self, c_name, p_value):
         self.name = 'process_normalization'
         self.c_name = c_name

@@ -1,0 +1,20 @@
+name: my_model_env
+channels:
+  - defaults
+  - conda-forge
+  - pytorch
+dependencies:
+  - python=3.11.2  # Specify Python version
+  - pytorch
+  - mlflow
+  - pip
+  - pip:
+    - mlflow==2.11.3
+    - cloudpickle==2.2.1
+    - dill==0.3.7
+    - numpy==1.24.2
+    - pandas==2.1.4
+    - scikit-learn==1.5.1
+    - scipy==1.11.4
+    - torch==2.3.1
+    - emb-model==0.0.34
