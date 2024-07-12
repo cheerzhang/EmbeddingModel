@@ -11,9 +11,10 @@ from .customized_dataset import ProcessNorm
 from .customized_dataset import create_char_to_idx, max_len_report
 from .customized_dataset import CheckData
 from .customized_dataset import trainModel, CharTransformerModel
+from .customized_dataset import get_version
 
 
-__all__ = ['CDataset', 'create_char_to_idx', 'max_len_report',
+__all__ = ['CDataset', 'create_char_to_idx', 'max_len_report', 'get_version',
         'ProcessJson', 'ProcessFilter', 'ProcessStr', 'ProcessNumer',
         'ProcessAge', 'PrcocessDate', 'ProcessDInDate',
         'ProcessCombineFE', 'ProcessSplitFE', 'ProcessNorm',

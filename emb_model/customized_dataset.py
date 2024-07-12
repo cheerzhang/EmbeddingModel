@@ -38,7 +38,15 @@ class CDataset(Dataset):
 
         return (*str_features_encoded, *num_features_encoded, torch.tensor([self.target[idx]], dtype=torch.float))
     
-        
+@staticmethod
+def get_version(package_name='emb_model'):
+    """
+    Get current version
+    :param package_name: 
+    :return: version
+    """
+    version = pkg_resources.get_distribution(package_name).version
+    return version
 
 def max_len_report(df, columns):
     X_ = df.copy()
@@ -316,7 +324,7 @@ class trainModel:
         if not os.path.exists(resource_path):
             raise FileNotFoundError(f"Resource file embedding_env.yaml not found in package.")
         shutil.copy(resource_path, os.getcwd())
-        print(f"File embedding_env has been copied to {os.getcwd()}")
+        print(f"File embedding_env.yaml has been copied to {os.getcwd()}")
 
 
 ################################################
