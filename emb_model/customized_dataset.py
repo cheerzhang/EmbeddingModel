@@ -230,6 +230,7 @@ class trainModel:
                 num_features_batch = {name: batch[i + len(str_features)].to(device) for i, name in enumerate(num_features)}
                 targets = batch[-1].to(device).squeeze()
                 optimizer.zero_grad()
+                print(str_features_batch, num_features_batch)
                 output = self.model(str_features_batch, num_features_batch)
                 loss = self.criterion(output, targets)  # Assuming `targets` is provided
                 loss.backward()
