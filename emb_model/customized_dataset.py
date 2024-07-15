@@ -175,7 +175,9 @@ class trainModel:
             'dimN': 128,
             'patience': 10,
             'lr': 0.01,
-            'char_to_idx': {}
+            'char_to_idx': {},
+            'str_features': [],
+            'num_features': []
         }
         self.model = None
         self.best_val_loss = float('inf')
@@ -199,6 +201,8 @@ class trainModel:
         return class_weights
     def train(self, char_to_idx, max_len, str_features, num_features):
         self.train_prameter['char_to_idx'] = char_to_idx
+        self.train_prameter['str_features'] = str_features
+        self.train_prameter['num_features'] = num_features
         if torch.backends.mps.is_available() and torch.backends.mps.is_built():
             device = torch.device("mps")
         else:
