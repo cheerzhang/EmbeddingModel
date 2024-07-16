@@ -138,7 +138,6 @@ class CharTransformerModel(nn.Module):
 
         # 将所有字符串特征和数值特征连接在一起
         combined_features = torch.cat(str_feature_outputs + list(num_features.values()), dim=1)
-        print(combined_features)
         normalized_features = F.normalize(combined_features, p=2, dim=1)
         output = self.classifier(normalized_features)   
         return output
