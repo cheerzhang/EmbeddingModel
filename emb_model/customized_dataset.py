@@ -602,3 +602,19 @@ class ProcessNorm(BaseEstimator):
         else:
             X_[self.c_name] = X_[self.c_name] / self.p_value
         return X_
+
+
+class MergeDf(BaseEstimator):
+    def __init__(self, df, x_on='id', df_on='id', dropDuplicate=False, drop_on='id'):
+        self.name = 'process_normalization'
+        self.df = df
+        self.x_on = x_on
+        self.df_on = df_on
+        self.dropDuplicate = dropDuplicate
+        self.drop_on = drop_on
+    def fit(self, X, y=None):
+        return self
+    def transform(self, X, y=None):
+        X_ = X.copy()
+        df_merged = X_.merge(self.df, left_on=self.x_on, right_on=self.df_on, how='left')
+        return df_merged
