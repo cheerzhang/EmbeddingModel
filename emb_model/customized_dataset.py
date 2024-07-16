@@ -616,5 +616,10 @@ class MergeDf(BaseEstimator):
         return self
     def transform(self, X, y=None):
         X_ = X.copy()
+        # convert id into same datatype
+        X_[self.x_on] = X_[self.x_on].astype(str)
+        self.df[self.df_on] = self.df[self.df_on].astype(str)
+        if self.dropDuplicate:
+            df_merged = df_merged.drop_duplicates(subset=self.drop_on)
         df_merged = X_.merge(self.df, left_on=self.x_on, right_on=self.df_on, how='left')
         return df_merged
