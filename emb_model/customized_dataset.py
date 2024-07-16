@@ -98,9 +98,8 @@ class CharTransformerModel(nn.Module):
         })
         encoder_layers = nn.TransformerEncoderLayer(d_model=dimN, nhead=nhead)
         self.transformer_encoder = nn.TransformerEncoder(encoder_layers, num_layers=num_layers)
-        print(f"len: {len(str_features)}")
         self.classifier = nn.Sequential(
-            nn.Linear(12*dimN + 11, 1024),
+            nn.Linear(len(str_features)*dimN + 11, 1024),
             nn.BatchNorm1d(1024),
             nn.ReLU(),
             nn.Dropout(0.4),
