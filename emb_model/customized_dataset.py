@@ -99,7 +99,7 @@ class CharTransformerModel(nn.Module):
         encoder_layers = nn.TransformerEncoderLayer(d_model=dimN, nhead=nhead)
         self.transformer_encoder = nn.TransformerEncoder(encoder_layers, num_layers=num_layers)
         layers = []
-        input_size = len(str_features) * dimN + num_features
+        input_size = len(str_features) * dimN + len(num_features)
         for layer_size in layer_sizes:
             layers.append(nn.Linear(input_size, layer_size))
             layers.append(nn.BatchNorm1d(layer_size))
@@ -201,7 +201,7 @@ class trainModel:
                                           max_lens=max_len, 
                                           str_features=str_features, 
                                           num_features=num_features,
-                                          layer_sizes=[2048, 512, 256, 128, 64, 32]).to(device)
+                                          layer_sizes=self.train_prameter['layer_sizes']).to(device)
         class_weights = torch.tensor(self.class_weights, dtype=torch.float).to(device)
         self.criterion = nn.CrossEntropyLoss(weight=class_weights)
         optimizer = optim.Adam(self.model.parameters(), lr=self.train_prameter['lr'], weight_decay=1e-4) # Adjust learning rate and weight decay as needed
