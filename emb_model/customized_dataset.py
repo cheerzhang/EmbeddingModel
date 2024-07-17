@@ -89,7 +89,7 @@ class PositionalEncoding(nn.Module):
         return x + self.pe[:x.size(0), :]
 
 class CharTransformerModel(nn.Module):
-    def __init__(self, embN, dimN, nhead, num_layers, max_lens, str_features, num_features):
+    def __init__(self, embN, dimN, nhead, num_layers, max_lens, str_features, num_features, layer_sizes):
         super(CharTransformerModel, self).__init__()
         self.embeddings = nn.Embedding(num_embeddings=embN, embedding_dim=dimN)
         # 动态创建位置编码器
@@ -98,34 +98,18 @@ class CharTransformerModel(nn.Module):
         })
         encoder_layers = nn.TransformerEncoderLayer(d_model=dimN, nhead=nhead)
         self.transformer_encoder = nn.TransformerEncoder(encoder_layers, num_layers=num_layers)
-        print(len(num_features))
-        self.classifier = nn.Sequential(
-            nn.Linear(len(str_features)*dimN + 11, 2048),
-            nn.BatchNorm1d(2048),
-            nn.ReLU(),
-            nn.Dropout(0.4),
-            nn.Linear(2048, 512),
-            nn.BatchNorm1d(512),
-            nn.ReLU(),
-            nn.Dropout(0.4), 
-            nn.Linear(512, 256),
-            nn.BatchNorm1d(256),
-            nn.ReLU(),
-            nn.Dropout(0.4),
-            nn.Linear(256, 128),
-            nn.BatchNorm1d(128),
-            nn.ReLU(),
-            nn.Dropout(0.4),
-            nn.Linear(128, 64),
-            nn.BatchNorm1d(64),
-            nn.ReLU(),
-            nn.Dropout(0.4),
-            nn.Linear(64, 32),
-            nn.BatchNorm1d(32),
-            nn.ReLU(),
-            nn.Dropout(0.4),
-            nn.Linear(32, 4)  # 4个类别
-        )
+        layers = []
+        input_size = len(str_features) * dimN + num_features
+        for layer_size in layer_sizes:
+            layers.append(nn.Linear(input_size, layer_size))
+            layers.append(nn.BatchNorm1d(layer_size))
+            layers.append(nn.ReLU())
+            layers.append(nn.Dropout(0.1))
+            input_size = layer_size
+        layers.append(nn.Linear(input_size, 4))  # 输出层，4个类别
+        self.classifier = nn.Sequential(*layers)
+
+        
     def forward(self, str_features, num_features):
         str_feature_outputs = []
         # 处理每个字符串特征
@@ -177,16 +161,19 @@ class trainModel:
             'lr': 0.01,
             'char_to_idx': {},
             'str_features': [],
-            'num_features': []
+            'num_features': [],
+            'layer_sizes' : [2048, 512, 256, 128, 64, 32]
         }
         self.model = None
         self.best_val_loss = float('inf')
     def set_train_parameter(self, batch_size=32, dimN=128, patience=10, lr=0.01,
+                            layer_sizes =[2048, 512, 256, 128, 64, 32],
                             best_model_path="best_model.pth"):
         self.train_prameter['batch_size'] = batch_size
         self.train_prameter['dimN'] = dimN
         self.train_prameter['patience'] = patience
         self.train_prameter['lr'] = lr
+        self.train_prameter['layer_sizes'] = layer_sizes
         self.best_model_path = best_model_path
         return self.train_prameter
     def prepare_data(self):
@@ -213,7 +200,8 @@ class trainModel:
                                           num_layers=3, 
                                           max_lens=max_len, 
                                           str_features=str_features, 
-                                          num_features=num_features).to(device)
+                                          num_features=num_features,
+                                          layer_sizes=[2048, 512, 256, 128, 64, 32]).to(device)
         class_weights = torch.tensor(self.class_weights, dtype=torch.float).to(device)
         self.criterion = nn.CrossEntropyLoss(weight=class_weights)
         optimizer = optim.Adam(self.model.parameters(), lr=self.train_prameter['lr'], weight_decay=1e-4) # Adjust learning rate and weight decay as needed
