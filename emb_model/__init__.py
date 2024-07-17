@@ -15,15 +15,17 @@ from .customized_dataset import trainModel, CharTransformerModel
 from .customized_dataset import get_version
 
 from .customized_dataset import ProcessFeatureInFit
+from .customized_dataset import ProcessConCatDF
 
 
 __all__ = ['CDataset', 'create_char_to_idx', 'max_len_report', 'get_version',
         'ProcessJson', 'ProcessFilter', 'ProcessStr', 'ProcessNumer',
         'ProcessAge', 'PrcocessDate', 'ProcessDInDate', 'ProcessFeatureInFit',
-        'ProcessCombineFE', 'ProcessSplitFE', 'ProcessNorm', 'MergeDf',
+        'ProcessCombineFE', 'ProcessSplitFE', 'ProcessNorm', 'MergeDf', 'ProcessConCatDF',
         'CheckData', 'trainModel', 'CharTransformerModel']
 __dataset__ = ['CDataset', 'create_char_to_idx', 'max_len_report', 'CheckData']
 __fe__ = ['ProcessJson', 'ProcessFilter', 'ProcessStr', 'ProcessCombineFE', 
           'ProcessAge', 'PrcocessDate', 'ProcessNumer', 'ProcessSplitFE', 'MergeDf',
-          'ProcessDInDate', 'ProcessNorm', 'ProcessFeatureInFit']
+          'ProcessDInDate', 'ProcessNorm', 
+          'ProcessFeatureInFit', 'ProcessConCatDF']
 __models__ = ['trainModel', 'CharTransformerModel']

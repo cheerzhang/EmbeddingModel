@@ -606,6 +606,10 @@ class MergeDf(BaseEstimator):
     def transform(self, X, y=None):
         X_ = X.copy()
         # convert id into same datatype
+        if self.x_on not in X_.columns.values:
+            raise ValueError(f"Missing feature: {self.x_on} in original dataframe")  
+        if self.df_on not in X_.columns.values:
+            raise ValueError(f"Missing feature: {self.df_on} in added in dataframe")  
         X_[self.x_on] = X_[self.x_on].astype(str)
         self.df[self.df_on] = self.df[self.df_on].astype(str)
         if self.dropDuplicate:
@@ -620,8 +624,25 @@ class ProcessFeatureInFit(BaseEstimator):
         self.feature_name = feature_name
         self.feature_value = None
     def fit(self, X, y=None):
-        self.feature_value = X[self.feature_name].values
+        if self.feature_name not in X.columns.values:
+            raise ValueError(f"Missing string feature: {self.feature_name}")  
+        else:
+            self.feature_value = X[self.feature_name].values
         return self
     def transform(self, X, y=None):
         X_ = X.copy()
         return X_
+
+class ProcessConCatDF(BaseEstimator):
+    def __init__(self, dfs = [], removeDuplicate=False, drop_on=None):
+        self.name = 'process_concat_df'
+        self.removeDuplicate = removeDuplicate
+        self.drop_on = drop_on
+    def fit(self, X, y=None):
+        return self
+    def transform(self, X, y=None):
+        df_new = pd.concat(self.dfs) 
+        if self.removeDuplicate:
+            df_new = df_new.drop_duplicates(subset=self.drop_on)
+        return df_new
+        
