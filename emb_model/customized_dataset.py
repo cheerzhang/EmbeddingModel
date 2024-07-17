@@ -608,7 +608,7 @@ class MergeDf(BaseEstimator):
         # convert id into same datatype
         if self.x_on not in X_.columns.values:
             raise ValueError(f"Missing feature: {self.x_on} in original dataframe")  
-        if self.df_on not in X_.columns.values:
+        if self.df_on not in self.df.columns.values:
             raise ValueError(f"Missing feature: {self.df_on} in added in dataframe")  
         X_[self.x_on] = X_[self.x_on].astype(str)
         self.df[self.df_on] = self.df[self.df_on].astype(str)
@@ -638,6 +638,7 @@ class ProcessConCatDF(BaseEstimator):
         self.name = 'process_concat_df'
         self.removeDuplicate = removeDuplicate
         self.drop_on = drop_on
+        self.dfs = dfs
     def fit(self, X, y=None):
         return self
     def transform(self, X, y=None):
