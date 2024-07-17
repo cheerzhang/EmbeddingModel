@@ -48,6 +48,7 @@ def get_version(package_name='emb_model'):
     version = pkg_resources.get_distribution(package_name).version
     return version
 
+
 def max_len_report(df, columns):
     X_ = df.copy()
     stats = {}
@@ -71,6 +72,7 @@ def create_char_to_idx(texts, special_tokens=['<PAD>', '<UNK>']):
     for idx, token in enumerate(special_tokens):
         char_to_idx[token] = idx
     return char_to_idx  
+
 
 ################################################
 #            Traom Models                      #
@@ -610,3 +612,16 @@ class MergeDf(BaseEstimator):
             df_merged = df_merged.drop_duplicates(subset=self.drop_on)
         df_merged = X_.merge(self.df, left_on=self.x_on, right_on=self.df_on, how='left')
         return df_merged
+
+
+class ProcessFeatureInFit(BaseEstimator):
+    def __init__(self, feature_name=None):
+        self.name = 'process_feature_in_fit'
+        self.feature_name = feature_name
+        self.feature_value = None
+    def fit(self, X, y=None):
+        self.feature_value = X[self.feature_name].values
+        return self
+    def transform(self, X, y=None):
+        X_ = X.copy()
+        return X_
