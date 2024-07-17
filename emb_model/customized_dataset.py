@@ -264,7 +264,8 @@ class trainModel:
                                           num_layers=3, 
                                           max_lens=max_len, 
                                           str_features=str_features, 
-                                          num_features=num_features)
+                                          num_features=num_features,
+                                          layer_sizes=self.train_prameter['layer_sizes'])
         self.model.load_state_dict(torch.load(self.best_model_path))
         self.model.eval()
         self.model.to('cpu')
