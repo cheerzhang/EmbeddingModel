@@ -11,7 +11,7 @@ from .customized_dataset import ProcessNorm
 from .customized_dataset import MergeDf
 from .customized_dataset import create_char_to_idx, max_len_report
 from .customized_dataset import CheckData
-from .customized_dataset import trainModel, CharTransformerModel
+from .customized_dataset import trainModel, CharTransformerModel, LSTMPredictor
 from .customized_dataset import get_version
 
 from .customized_dataset import ProcessFeatureInFit
