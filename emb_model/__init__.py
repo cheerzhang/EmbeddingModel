@@ -25,11 +25,11 @@ __all__ = ['CDataset', 'create_char_to_idx', 'max_len_report', 'get_version',
         'ProcessAge', 'PrcocessDate', 'ProcessDInDate', 'ProcessFeatureInFit', 'ProcessFilters',
         'ProcessCombineFE', 'ProcessSplitFE', 'ProcessNorm', 'MergeDf', 'ProcessConCatDF',
         'CheckData', 'trainModel', 'CharTransformerModel', 'get_5number', 
-        'MonthlyAnalysis', 'GroupAnalysis']
+        'MonthlyAnalysis', 'GroupAnalysis', 'LSTMPredictor']
 __dataset__ = ['CDataset', 'create_char_to_idx', 'max_len_report', 'CheckData', 'get_5number']
 __fe__ = ['ProcessJson', 'ProcessFilter', 'ProcessStr', 'ProcessCombineFE', 
           'ProcessAge', 'PrcocessDate', 'ProcessNumer', 'ProcessSplitFE', 'MergeDf',
           'ProcessDInDate', 'ProcessNorm',
           'ProcessFeatureInFit', 'ProcessConCatDF']
-__models__ = ['trainModel', 'CharTransformerModel']
+__models__ = ['trainModel', 'CharTransformerModel', 'LSTMPredictor']
 __analysis__= ['MonthlyAnalysis', 'GroupAnalysis']

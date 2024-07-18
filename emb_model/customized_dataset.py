@@ -75,7 +75,7 @@ def create_char_to_idx(texts, special_tokens=['<PAD>', '<UNK>']):
 
 
 ################################################
-#            Traom Models                      #
+#            Train Models                      #
 ################################################
 class PositionalEncoding(nn.Module):
     def __init__(self, dimN, max_len=5000):
@@ -321,6 +321,21 @@ class trainModel:
         shutil.copy(resource_path, os.getcwd())
         print(f"File embedding_env.yaml has been copied to {os.getcwd()}")
 
+class LSTMPredictor(nn.Module):
+    def __init__(self, input_size=1, hidden_size=50, output_size=1):
+        super(LSTMPredictor, self).__init__()
+        self.hidden_size = hidden_size
+        self.lstm = nn.LSTM(input_size, hidden_size, batch_first=True)
+        self.fc = nn.Linear(hidden_size, output_size)
+        self.sigmoid = nn.Sigmoid()
+    
+    def forward(self, x):
+        h0 = torch.zeros(1, x.size(0), self.hidden_size)
+        c0 = torch.zeros(1, x.size(0), self.hidden_size)
+        out, _ = self.lstm(x, (h0, c0))
+        out = self.fc(out[:, -1, :])
+        out = self.sigmoid(out)
+        return out
 
 ################################################
 #            FE pipeline                       #
@@ -712,4 +727,6 @@ class GroupAnalysis(BaseEstimator):
         return self
     def transform(self, X, y=None):
         return X
+
+
 
