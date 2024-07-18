@@ -681,7 +681,7 @@ class GroupAnalysis(BaseEstimator):
         self.group_column = group_column
         self.calulate_column = calulate_column
         self.type = type
-        self.df
+        self.df = None
     def fit(self, X, y=None):
         if self.type == 'TF':
             X['is_none'] = X[self.calulate_column].isna()
