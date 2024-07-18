@@ -687,4 +687,6 @@ class GroupAnalysis(BaseEstimator):
             X['is_none'] = X[self.calulate_column].isna()
             self.df = X.groupby(self.group_column)['is_none'].any().reset_index()
         return self
+    def transform(self, X, y=None):
+        return X
 
