@@ -377,6 +377,23 @@ class ProcessFilter(BaseEstimator):
                 raise ValueError(f"Missing string feature: {c_name}")
         return X_
 
+class ProcessFilters(BaseEstimator):
+    def __init__(self, c_names, c_values):
+        self.name = 'process_filter'
+        self.c_names = c_names
+        self.c_values = c_values
+    def fit(self, X, y=None):
+        return self
+    def transform(self, X, y=None):
+        X_ = X.copy()
+        for i, c_name in enumerate(self.c_names):
+            if c_name in X_.columns.values:
+                X_ = X_[X_[c_name].isin(self.c_values[i])]
+            else:
+                raise ValueError(f"Missing string feature: {c_name}")
+        return X_
+
+
 class ProcessStr(BaseEstimator):
     def __init__(self, c_names):
         self.name = 'process_str'
@@ -576,7 +593,8 @@ class CheckData(BaseEstimator):
     def transform(self, X, y=None):
         X_ = X.copy()
         return X_
-    
+
+   
 class ProcessNorm(BaseEstimator):
     def __init__(self, c_name, p_value):
         self.name = 'process_normalization'
@@ -633,6 +651,7 @@ class ProcessFeatureInFit(BaseEstimator):
         X_ = X.copy()
         return X_
 
+
 class ProcessConCatDF(BaseEstimator):
     def __init__(self, dfs = [], removeDuplicate=False, drop_on=None):
         self.name = 'process_concat_df'
@@ -671,9 +690,13 @@ class MonthlyAnalysis(BaseEstimator):
             self.monthly = X.groupby(self.group_column + ['year_month'])[self.calulate_column].sum().reset_index()
         if self.type == 'mean':
             self.monthly = X.groupby(self.group_column + ['year_month'])[self.calulate_column].mean().reset_index()
+        if self.type == 'TF':
+            X['is_none'] = X[self.calulate_column].isna()
+            self.monthly = X.groupby(self.group_column + ['year_month'])['is_none'].any().reset_index()
         return self
     def transform(self, X, y=None):
         return X
+
 
 class GroupAnalysis(BaseEstimator):
     def __init__(self, calulate_column, group_column=[], type='TF'):

@@ -1,7 +1,7 @@
 # emb_model/__init__.py
 from .customized_dataset import CDataset
 from .customized_dataset import ProcessJson
-from .customized_dataset import ProcessFilter
+from .customized_dataset import ProcessFilter, ProcessFilters
 from .customized_dataset import ProcessStr, ProcessNumer
 from .customized_dataset import PrcocessDate, ProcessDInDate
 from .customized_dataset import ProcessAge
@@ -22,9 +22,10 @@ from .customized_dataset import MonthlyAnalysis, GroupAnalysis
 
 __all__ = ['CDataset', 'create_char_to_idx', 'max_len_report', 'get_version',
         'ProcessJson', 'ProcessFilter', 'ProcessStr', 'ProcessNumer',
-        'ProcessAge', 'PrcocessDate', 'ProcessDInDate', 'ProcessFeatureInFit',
+        'ProcessAge', 'PrcocessDate', 'ProcessDInDate', 'ProcessFeatureInFit', 'ProcessFilters',
         'ProcessCombineFE', 'ProcessSplitFE', 'ProcessNorm', 'MergeDf', 'ProcessConCatDF',
-        'CheckData', 'trainModel', 'CharTransformerModel', 'get_5number', 'MonthlyAnalysis', 'GroupAnalysis']
+        'CheckData', 'trainModel', 'CharTransformerModel', 'get_5number', 
+        'MonthlyAnalysis', 'GroupAnalysis']
 __dataset__ = ['CDataset', 'create_char_to_idx', 'max_len_report', 'CheckData', 'get_5number']
 __fe__ = ['ProcessJson', 'ProcessFilter', 'ProcessStr', 'ProcessCombineFE', 
           'ProcessAge', 'PrcocessDate', 'ProcessNumer', 'ProcessSplitFE', 'MergeDf',
