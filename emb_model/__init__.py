@@ -17,18 +17,18 @@ from .customized_dataset import get_version
 from .customized_dataset import ProcessFeatureInFit
 from .customized_dataset import ProcessConCatDF
 from .customized_dataset import get_5number
-from .customized_dataset import MonthlyAnalysis
+from .customized_dataset import MonthlyAnalysis, GroupAnalysis
 
 
 __all__ = ['CDataset', 'create_char_to_idx', 'max_len_report', 'get_version',
         'ProcessJson', 'ProcessFilter', 'ProcessStr', 'ProcessNumer',
         'ProcessAge', 'PrcocessDate', 'ProcessDInDate', 'ProcessFeatureInFit',
         'ProcessCombineFE', 'ProcessSplitFE', 'ProcessNorm', 'MergeDf', 'ProcessConCatDF',
-        'CheckData', 'trainModel', 'CharTransformerModel', 'get_5number', 'MonthlyAnalysis']
+        'CheckData', 'trainModel', 'CharTransformerModel', 'get_5number', 'MonthlyAnalysis', 'GroupAnalysis']
 __dataset__ = ['CDataset', 'create_char_to_idx', 'max_len_report', 'CheckData', 'get_5number']
 __fe__ = ['ProcessJson', 'ProcessFilter', 'ProcessStr', 'ProcessCombineFE', 
           'ProcessAge', 'PrcocessDate', 'ProcessNumer', 'ProcessSplitFE', 'MergeDf',
           'ProcessDInDate', 'ProcessNorm',
           'ProcessFeatureInFit', 'ProcessConCatDF']
 __models__ = ['trainModel', 'CharTransformerModel']
-__analysis__= ['MonthlyAnalysis']
+__analysis__= ['MonthlyAnalysis', 'GroupAnalysis']
