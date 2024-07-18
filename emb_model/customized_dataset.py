@@ -655,3 +655,18 @@ def get_5number(value):
     q95 = value.quantile(0.95)
     q99 = value.quantile(0.99)
     return {'max': max_number, '99q': q99, '95q': q95, '90q': q90, '75q': q75}
+
+
+class MonthlyAnalysis(BaseEstimator):
+    def __init__(self, date_column, calulate_column, group_column=[]):
+        self.name = 'monthly_analysis'
+        self.date_column = date_column
+        self.group_column = group_column
+        self.calulate_column = calulate_column
+        self.monthly_sum = None
+    def fit(self, X, y=None):
+        X['year_month'] = X[self.date_column].dt.to_period('M')
+        self.monthly_sum = X.groupby(self.group_column + ['year_month'])[self.calulate_column].sum().reset_index()
+        return self
+    def transform(self, X, y=None):
+        return X
