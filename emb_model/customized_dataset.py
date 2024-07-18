@@ -646,4 +646,12 @@ class ProcessConCatDF(BaseEstimator):
         if self.removeDuplicate:
             df_new = df_new.drop_duplicates(subset=self.drop_on)
         return df_new
-        
+
+
+def get_5number(value):
+    max_number = value.max()
+    q75 = value.quantile(0.75)
+    q90 = value.quantile(0.90)
+    q95 = value.quantile(0.95)
+    q99 = value.quantile(0.99)
+    return {'max': max_number, '99q': q99, '95q': q95, '90q': q90, '75q': q75}
