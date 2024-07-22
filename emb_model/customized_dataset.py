@@ -6,7 +6,7 @@ import torch.optim as optim
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 import math, os, shutil, pkg_resources
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
-
+from datetime import datetime, timedelta
 
 
 
@@ -342,7 +342,6 @@ class LSTMPredictor(nn.Module):
 ################################################
 import json
 from sklearn.base import BaseEstimator
-from datetime import datetime
 import numpy as np
 
 class ProcessJson(BaseEstimator):
@@ -730,3 +729,9 @@ class GroupAnalysis(BaseEstimator):
 
 
 
+def get_week_range(date):
+    start_of_week = date - timedelta(days=date.weekday())
+    end_of_week = start_of_week + timedelta(days=7)
+    start_of_week = pd.Timestamp(start_of_week).replace(hour=0, minute=0, second=0, microsecond=0)
+    end_of_week = pd.Timestamp(end_of_week).replace(hour=0, minute=0, second=0, microsecond=0)
+    return start_of_week, end_of_week
