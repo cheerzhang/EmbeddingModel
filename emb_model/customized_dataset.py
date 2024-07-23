@@ -729,9 +729,18 @@ class GroupAnalysis(BaseEstimator):
 
 
 
-def get_week_range(date):
+def get_week_range(date, days=7):
+    """ input a date, return the start week date and end week date """
     start_of_week = date - timedelta(days=date.weekday())
-    end_of_week = start_of_week + timedelta(days=7)
+    end_of_week = start_of_week + timedelta(days=days)
     start_of_week = pd.Timestamp(start_of_week).replace(hour=0, minute=0, second=0, microsecond=0)
     end_of_week = pd.Timestamp(end_of_week).replace(hour=0, minute=0, second=0, microsecond=0)
     return start_of_week, end_of_week
+
+
+def get_week_starts(df, date_column):
+    """ input a df, return the week start days array of the df """
+    df[date_column] = pd.to_datetime(df[date_column])
+    df['week_start'] = (df[date_column] - pd.to_timedelta(df[date_column].dt.weekday, unit='d')).dt.date
+    week_starts = df['week_start'].drop_duplicates().sort_values().reset_index(drop=True)
+    return week_starts
