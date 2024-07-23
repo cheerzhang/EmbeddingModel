@@ -749,34 +749,44 @@ class ABTestRatio(BaseEstimator):
     def __init__(self, type='Count', counts=[100, 100, 100, 100], dfs=[None, None], column=''):
         self.name = 'AB_Test'
         self.type = type # DF or Count
-        self.A_Pass_Count = counts[0]
-        self.A_Fail_Count = counts[1]
-        self.B_Pass_Count = counts[2]
-        self.B_Fail_Count = counts[3]
-        self.A_total = self.A_Pass_Count + self.A_Fail_Count
-        self.B_total = self.B_Pass_Count + self.B_Fail_Count
-        self.A_df = dfs[0]
-        self.B_df = dfs[1]
+        self.counts = counts
+        self.dfs = dfs
         self.column = column
         self.alpha = 0.05
         self.result = "DK"
-    def p0_B_lg_A(self):
+    def config(self):
+        if self.type == 'Count':
+            self.A_Pass_Count = self.counts[0]
+            self.A_Fail_Count = self.counts[1]
+            self.B_Pass_Count = self.counts[2]
+            self.B_Fail_Count = self.counts[3]
+        if self.type == 'DF':
+            A_df = self.dfs[0]
+            self.A_Pass_Count = A_df[A_df[self.column]==True].shape[0]
+            self.A_Fail_Count = A_df[A_df[self.column]==False].shape[0]
+            B_df = self.dfs[1]
+            self.B_Pass_Count = B_df[B_df[self.column]==True].shape[0]
+            self.B_Fail_Count = B_df[B_df[self.column]==False].shape[0]
+        self.A_total = self.A_Pass_Count + self.A_Fail_Count
+        self.B_total = self.B_Pass_Count + self.B_Fail_Count
+    def p0_B_sg_A(self):
         count = np.array([self.A_Pass_Count, self.B_Pass_Count])
         nobs = np.array([self.A_total, self.B_total])
         z_stat, p_value = sm.stats.proportions_ztest(count, nobs, alternative='smaller')
         if p_value < self.alpha:
-            return "Drop"
+            return "Increase"
         else:
-            return "Not sure drop"
-    def p0_B_sg_A(self):
+            return "Not sure Increase"
+    def p0_B_lg_A(self):
         count = np.array([self.A_Pass_Count, self.B_Pass_Count])
         nobs = np.array([self.A_total, self.B_total])
         z_stat, p_value = sm.stats.proportions_ztest(count, nobs, alternative='larger')
         if p_value < self.alpha:
-            return "Increase"
+            return "Drop"
         else:
-            return "Not sure Increase"
+            return "Not sure Drop"
     def fit(self, X, y=None):
+        self.config()
         if self.p0_B_lg_A() == "Drop":
             self.result = "Drop"
         elif self.p0_B_sg_A() == "Increase":
