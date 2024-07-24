@@ -756,6 +756,7 @@ class ABTestRatio(BaseEstimator):
         self.status_increase = True
         self.status_drop = True
         self.status_same = True
+        self.result = "DK"
     def config(self):
         if self.type == 'Count':
             self.A_Pass_Count = self.counts[0]
@@ -798,7 +799,7 @@ class ABTestRatio(BaseEstimator):
             self.p0_B_lg_A()
             self.p0_B_same_A()
             if self.status_increase==False and self.status_drop==False:
-                self.result = "quite same"
+                self.result = "quite Same"
             if self.status_drop==True and self.status_increase==False and self.status_same==False:
                 self.result = "Drop"
             if self.status_increase==True and self.status_drop==False and self.status_same==False:
