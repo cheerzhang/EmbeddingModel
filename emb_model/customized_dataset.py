@@ -796,4 +796,29 @@ class ABTestRatio(BaseEstimator):
         return self
     def transform(self, X, y=None):
         return X
+
+
+class FilterRange(BaseEstimator):
+    def __init__(self, column='', range_min=None, range_max=None, type='left'):
+        self.name = 'filter_by_range'
+        self.column = column
+        self.range_min = range_min
+        self.range_max = range_max
+        self.type = type # left >= & < ; right > % <= ; all: >= and <= ; none: > & <
+    def fit(self, X, y=None):
+        return self
+    def transform(self, X, y=None):
+        X_ = X.copy()
+        if self.column not in X_.columns.values:
+            raise ValueError(f"Missing string feature: {self.feature_name}")  
+        else:
+            if self.type == 'left':
+                X_ = X_[(X_[self.column]>=self.range_min) & (X_[self.column]<self.range_max)]
+            if self.type == 'right':
+                X_ = X_[(X_[self.column]>self.range_min) & (X_[self.column]<=self.range_max)]
+            if self.type == 'all':
+                X_ = X_[(X_[self.column]>=self.range_min) & (X_[self.column]<=self.range_max)]
+            if self.type == 'none':
+                X_ = X_[(X_[self.column]>self.range_min) & (X_[self.column]<self.range_max)]
+        return X_
     
