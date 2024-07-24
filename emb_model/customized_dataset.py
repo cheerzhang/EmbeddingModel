@@ -753,7 +753,6 @@ class ABTestRatio(BaseEstimator):
         self.dfs = dfs
         self.column = column
         self.alpha = 0.05
-        self.result = "DK"
         self.status_increase = True
         self.status_drop = True
         self.status_same = True
@@ -795,6 +794,9 @@ class ABTestRatio(BaseEstimator):
         if self.A_total == 0 or self.B_total == 0:
             self.result = ""
         else:
+            self.p0_B_sg_A()
+            self.p0_B_lg_A()
+            self.p0_B_same_A()
             if self.status_increase==False and self.status_drop==False:
                 self.result = "quite same"
             if self.status_drop==True and self.status_increase==False and self.status_same==False:
