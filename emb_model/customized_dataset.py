@@ -806,12 +806,16 @@ class ABTestRatio(BaseEstimator):
             self.p0_B_same_A()
 
             # 设置 result 的逻辑
-            if not self.status_same and self.status_increase:
-                self.result = "Increase"
-            elif not self.status_increase and not self.status_drop and self.status_same:
-                self.result = "quite Same"
-            if self.status_drop and not self.status_same:
-                self.result = "Decrease"
+            if not self.status_same:
+                if self.status_drop and not self.status_increase:
+                    self.result = "Decrease"
+                elif not self.status_drop and self.status_increase:
+                    self.result = "Increase"
+                else:
+                    self.result = "Different"
+            else:
+                if not self.status_drop and not self.status_increase:
+                    self.result = "quite Same"
 
         return self
 
