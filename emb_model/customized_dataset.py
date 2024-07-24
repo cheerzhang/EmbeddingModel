@@ -745,10 +745,11 @@ def get_week_starts(df, date_column):
     week_starts = df['week_start'].drop_duplicates().sort_values().reset_index(drop=True)
     return week_starts
 
+
 class ABTestRatio(BaseEstimator):
     def __init__(self, type='Count', counts=[100, 100, 100, 100], dfs=[None, None], column=''):
         self.name = 'AB_Test'
-        self.type = type # DF or Count
+        self.type = type  # DF or Count
         self.counts = counts
         self.dfs = dfs
         self.column = column
@@ -757,54 +758,65 @@ class ABTestRatio(BaseEstimator):
         self.status_drop = True
         self.status_same = True
         self.result = "DK"
+
     def config(self):
         if self.type == 'Count':
             self.A_Pass_Count = self.counts[0]
             self.A_Fail_Count = self.counts[1]
             self.B_Pass_Count = self.counts[2]
             self.B_Fail_Count = self.counts[3]
-        if self.type == 'DF':
+        elif self.type == 'DF':
             A_df = self.dfs[0]
-            self.A_Pass_Count = A_df[A_df[self.column]==True].shape[0]
-            self.A_Fail_Count = A_df[A_df[self.column]==False].shape[0]
+            self.A_Pass_Count = A_df[A_df[self.column] == True].shape[0]
+            self.A_Fail_Count = A_df[A_df[self.column] == False].shape[0]
             B_df = self.dfs[1]
-            self.B_Pass_Count = B_df[B_df[self.column]==True].shape[0]
-            self.B_Fail_Count = B_df[B_df[self.column]==False].shape[0]
+            self.B_Pass_Count = B_df[B_df[self.column] == True].shape[0]
+            self.B_Fail_Count = B_df[B_df[self.column] == False].shape[0]
         self.A_total = self.A_Pass_Count + self.A_Fail_Count
         self.B_total = self.B_Pass_Count + self.B_Fail_Count
+
     def p0_B_sg_A(self):
         count = np.array([self.A_Pass_Count, self.B_Pass_Count])
         nobs = np.array([self.A_total, self.B_total])
         z_stat, p_value = sm.stats.proportions_ztest(count, nobs, alternative='smaller')
         if p_value < self.alpha:
             self.status_drop = False
+
     def p0_B_lg_A(self):
         count = np.array([self.A_Pass_Count, self.B_Pass_Count])
         nobs = np.array([self.A_total, self.B_total])
         z_stat, p_value = sm.stats.proportions_ztest(count, nobs, alternative='larger')
         if p_value < self.alpha:
             self.status_increase = False
+
     def p0_B_same_A(self):
         count = np.array([self.A_Pass_Count, self.B_Pass_Count])
         nobs = np.array([self.A_total, self.B_total])
         z_stat, p_value = sm.stats.proportions_ztest(count, nobs, alternative='two-sided')
         if p_value < self.alpha:
             self.status_same = False
+
     def fit(self, X, y=None):
         self.config()
         if self.A_total == 0 or self.B_total == 0:
-            self.result = ""
+            self.result = "No data"
         else:
             self.p0_B_sg_A()
             self.p0_B_lg_A()
             self.p0_B_same_A()
-            if self.status_increase==False and self.status_drop==False:
-                self.result = "quite Same"
-            if self.status_drop==True and self.status_increase==False and self.status_same==False:
-                self.result = "Drop"
-            if self.status_increase==True and self.status_drop==False and self.status_same==False:
+
+            # 设置 result 的逻辑
+            if not self.status_same:
+                self.result = "Different"
+            elif not self.status_increase and not self.status_drop:
+                self.result = "Same"
+            elif self.status_drop:
+                self.result = "Decrease"
+            elif self.status_increase:
                 self.result = "Increase"
+
         return self
+
     def transform(self, X, y=None):
         return X
 
