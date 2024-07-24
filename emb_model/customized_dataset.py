@@ -791,10 +791,10 @@ class ABTestRatio(BaseEstimator):
         if p_value < self.alpha:
             self.status_same = False
     def fit(self, X, y=None):
+        self.config()
         if self.A_total == 0 or self.B_total == 0:
             self.result = ""
         else:
-            self.config()
             if self.status_increase==False and self.status_drop==False:
                 self.result = "quite same"
             if self.status_drop==True and self.status_increase==False and self.status_same==False:
