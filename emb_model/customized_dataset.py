@@ -814,8 +814,7 @@ class ABTestRatio(BaseEstimator):
                 else:
                     self.result = "Different"
             else:
-                if not self.status_drop and not self.status_increase:
-                    self.result = "quite Same"
+                self.result = "quite Same"
 
         return self
 
