@@ -754,6 +754,9 @@ class ABTestRatio(BaseEstimator):
         self.column = column
         self.alpha = 0.05
         self.result = "DK"
+        self.status_increase = True
+        self.status_drop = True
+        self.status_same = True
     def config(self):
         if self.type == 'Count':
             self.A_Pass_Count = self.counts[0]
@@ -774,25 +777,30 @@ class ABTestRatio(BaseEstimator):
         nobs = np.array([self.A_total, self.B_total])
         z_stat, p_value = sm.stats.proportions_ztest(count, nobs, alternative='smaller')
         if p_value < self.alpha:
-            return "Increase"
-        else:
-            return "Not sure Increase"
+            self.status_drop = False
     def p0_B_lg_A(self):
         count = np.array([self.A_Pass_Count, self.B_Pass_Count])
         nobs = np.array([self.A_total, self.B_total])
         z_stat, p_value = sm.stats.proportions_ztest(count, nobs, alternative='larger')
         if p_value < self.alpha:
-            return "Drop"
-        else:
-            return "Not sure Drop"
+            self.status_increase = False
+    def p0_B_same_A(self):
+        count = np.array([self.A_Pass_Count, self.B_Pass_Count])
+        nobs = np.array([self.A_total, self.B_total])
+        z_stat, p_value = sm.stats.proportions_ztest(count, nobs, alternative='two-sided')
+        if p_value < self.alpha:
+            self.status_same = False
     def fit(self, X, y=None):
-        self.config()
-        if self.p0_B_lg_A() == "Drop":
-            self.result = "Drop"
-        elif self.p0_B_sg_A() == "Increase":
-            self.result = "Increase"
+        if self.A_total == 0 or self.B_total == 0:
+            self.result = ""
         else:
-            self.result = "quite same"
+            self.config()
+            if self.status_increase==False and self.status_drop==False:
+                self.result = "quite same"
+            if self.status_drop==True and self.status_increase==False and self.status_same==False:
+                self.result = "Drop"
+            if self.status_increase==True and self.status_drop==False and self.status_same==False:
+                self.result = "Increase"
         return self
     def transform(self, X, y=None):
         return X
