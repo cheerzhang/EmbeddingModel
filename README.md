@@ -1,2 +1,8 @@
 # EmbeddingModel
-embedding models
+
+#### Import
+
+```
+from emb_model.customized_dataset import *
+```
+
