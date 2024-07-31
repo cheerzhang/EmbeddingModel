@@ -375,6 +375,8 @@ class trainModelV2:
         self.val_dataloader = None
         self.train_prameter = {
             'batch_size': 32,
+            'nhead': 4,
+            'num_layers': 2,
             'patience': 10,
             'lr': 0.01,
             'char_to_idx': {},
@@ -385,12 +387,15 @@ class trainModelV2:
         self.model = None
         self.best_val_loss = float('inf')
     def set_train_parameter(self, batch_size=32, dimN_dict={}, patience=10, lr=0.01,
+                            nhead=4, num_layers=2,
                             layer_sizes =[2048, 512, 256, 128, 64, 32],
                             best_model_path="best_model.pth"):
         self.train_prameter['batch_size'] = batch_size
         self.train_prameter['dimN_dict'] = dimN_dict
         self.train_prameter['patience'] = patience
         self.train_prameter['lr'] = lr
+        self.train_prameter['nhead'] = nhead
+        self.train_prameter['num_layers'] = num_layers
         self.train_prameter['layer_sizes'] = layer_sizes
         self.best_model_path = best_model_path
         return self.train_prameter
@@ -414,8 +419,8 @@ class trainModelV2:
             device = torch.device("cpu")
         self.model = CharTransformerModelV2(embN=len(char_to_idx),
                                           dimN_dict=self.train_prameter['dimN_dict'], 
-                                          nhead=8, 
-                                          num_layers=3, 
+                                          nhead=self.train_prameter['nhead'],
+                                          num_layers=self.train_prameter['num_layers'],
                                           max_lens=max_len, 
                                           str_features=str_features, 
                                           num_features=num_features,
