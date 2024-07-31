@@ -90,6 +90,49 @@ class PositionalEncoding(nn.Module):
     def forward(self, x):
         return x + self.pe[:x.size(0), :]
 
+
+class CharTransformerModelV2(nn.Module):
+    def __init__(self, embN, dimN_dict, nhead, num_layers, max_lens, str_features, num_features, layer_sizes):
+        super(CharTransformerModel, self).__init__()
+        self.embeddings = nn.ModuleDict({
+            feature: nn.Embedding(num_embeddings=embN, embedding_dim=dimN_dict[feature])
+            for feature in str_features
+        })
+        self.pos_encoders = nn.ModuleDict({
+            feature: PositionalEncoding(dimN_dict[feature], max_lens[feature])
+            for feature in str_features
+        })
+        self.transformer_encoders = nn.ModuleDict({
+            feature: nn.TransformerEncoder(
+                nn.TransformerEncoderLayer(d_model=dimN_dict[feature], nhead=nhead),
+                num_layers=num_layers
+            )
+            for feature in str_features
+        })
+        input_size = sum(dimN_dict.values()) + len(num_features)
+        layers = []
+        for layer_size in layer_sizes:
+            layers.append(nn.Linear(input_size, layer_size))
+            layers.append(nn.BatchNorm1d(layer_size))
+            layers.append(nn.ReLU())
+            layers.append(nn.Dropout(0.1))
+            input_size = layer_size
+        layers.append(nn.Linear(input_size, 4))  # 输出层，4个类别
+        self.classifier = nn.Sequential(*layers)
+
+    def forward(self, str_features, num_features):
+        str_feature_outputs = []
+        for feature_name, feature_tensor in str_features.items():
+            embedded = self.embeddings[feature_name](feature_tensor).permute(1, 0, 2)
+            pos_encoded = self.pos_encoders[feature_name](embedded)
+            transformer_output = self.transformer_encoders[feature_name](pos_encoded)
+            feature_output = transformer_output.mean(dim=0)
+            str_feature_outputs.append(feature_output)
+        combined_features = torch.cat(str_feature_outputs + list(num_features.values()), dim=1)
+        normalized_features = F.normalize(combined_features, p=2, dim=1)
+        output = self.classifier(normalized_features)   
+        return output
+    
 class CharTransformerModel(nn.Module):
     def __init__(self, embN, dimN, nhead, num_layers, max_lens, str_features, num_features, layer_sizes):
         super(CharTransformerModel, self).__init__()
@@ -320,6 +363,182 @@ class trainModel:
             raise FileNotFoundError(f"Resource file embedding_env.yaml not found in package.")
         shutil.copy(resource_path, os.getcwd())
         print(f"File embedding_env.yaml has been copied to {os.getcwd()}")
+
+
+class trainModelV2:
+    def __init__(self, train_dataset, valid_dataset):
+        self.train_dataset = train_dataset
+        self.valid_dataset = valid_dataset
+        self.train_dataloader = None
+        self.val_dataloader = None
+        self.train_dataloader = None
+        self.val_dataloader = None
+        self.train_prameter = {
+            'batch_size': 32,
+            'dimN': 128,
+            'patience': 10,
+            'lr': 0.01,
+            'char_to_idx': {},
+            'str_features': [],
+            'num_features': [],
+            'layer_sizes' : [2048, 512, 256, 128, 64, 32]
+        }
+        self.model = None
+        self.best_val_loss = float('inf')
+    def set_train_parameter(self, batch_size=32, dimN_dict={}, patience=10, lr=0.01,
+                            layer_sizes =[2048, 512, 256, 128, 64, 32],
+                            best_model_path="best_model.pth"):
+        self.train_prameter['batch_size'] = batch_size
+        self.train_prameter['dimN_dict'] = dimN_dict
+        self.train_prameter['patience'] = patience
+        self.train_prameter['lr'] = lr
+        self.train_prameter['layer_sizes'] = layer_sizes
+        self.best_model_path = best_model_path
+        return self.train_prameter
+    def prepare_data(self):
+        self.train_dataloader = DataLoader(self.train_dataset, batch_size=self.train_prameter['batch_size'], shuffle=True)
+        self.val_dataloader = DataLoader(self.valid_dataset, batch_size=self.train_prameter['batch_size'], shuffle=False)
+    def get_class_weight(self, df, label_columns):
+        labels = np.array(df[label_columns].values)
+        class_sample_counts = np.bincount(labels)
+        total_samples = len(labels)
+        class_weights = total_samples / (len(class_sample_counts) * class_sample_counts)
+        self.class_weights = class_weights
+        return class_weights
+    def train(self, char_to_idx, max_len, str_features, num_features):
+        self.train_prameter['char_to_idx'] = char_to_idx
+        self.train_prameter['str_features'] = str_features
+        self.train_prameter['num_features'] = num_features
+        if torch.backends.mps.is_available() and torch.backends.mps.is_built():
+            device = torch.device("mps")
+        else:
+            device = torch.device("cpu")
+        self.model = CharTransformerModelV2(embN=len(char_to_idx),
+                                          dimN_dict=self.train_prameter['dimN_dict'], 
+                                          nhead=8, 
+                                          num_layers=3, 
+                                          max_lens=max_len, 
+                                          str_features=str_features, 
+                                          num_features=num_features,
+                                          layer_sizes=self.train_prameter['layer_sizes']).to(device)
+        class_weights = torch.tensor(self.class_weights, dtype=torch.float).to(device)
+        self.criterion = nn.CrossEntropyLoss(weight=class_weights)
+        optimizer = optim.Adam(self.model.parameters(), lr=self.train_prameter['lr'], weight_decay=1e-4) # Adjust learning rate and weight decay as needed
+        scheduler = ReduceLROnPlateau(optimizer, 'min', patience=2, factor=0.7, verbose=True)
+        early_stopping = EarlyStopping(patience=self.train_prameter['patience'], verbose=True)
+        num_epochs = 1000 # Define the number of epochs
+        train_losses_list = []
+        val_losses_list = []
+        for epoch in range(num_epochs):
+            self.model.train()
+            train_losses = []
+            for batch in self.train_dataloader:
+                str_features_batch = {name: batch[i].to(device) for i, name in enumerate(str_features)}
+                num_features_batch = {name: batch[i + len(str_features)].to(device) for i, name in enumerate(num_features)}
+                targets = batch[-1].to(device).squeeze()
+                optimizer.zero_grad()
+                output = self.model(str_features_batch, num_features_batch)
+                loss = self.criterion(output, targets)  # Assuming `targets` is provided
+                loss.backward()
+                torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=1.0)
+                optimizer.step()
+                train_losses.append(loss.item())
+            train_loss = sum(train_losses) / len(train_losses)
+            train_losses_list.append(train_loss)
+            # eval
+            self.model.eval()
+            val_losses = []
+            with torch.no_grad():
+                for batch in self.val_dataloader:
+                    str_features_batch = {name: batch[i].to(device) for i, name in enumerate(str_features)}
+                    num_features_batch = {name: batch[i + len(str_features)].to(device) for i, name in enumerate(num_features)}
+                    targets = batch[-1].to(device).squeeze()
+                    output = self.model(str_features_batch, num_features_batch)
+                    loss = self.criterion(output, targets)
+                    val_losses.append(loss.item())
+            val_loss = sum(val_losses) / len(val_losses)
+            val_losses_list.append(val_loss)
+            # check if this is the best model
+            if val_loss < self.best_val_loss:
+                self.best_val_loss = val_loss
+                torch.save(self.model.state_dict(), self.best_model_path)
+                print(f"Best model saved with validation loss: {val_loss:.6f}")
+            # early stop
+            if epoch % 1 == 0:
+                print(f'Epoch {epoch}, Loss: {train_loss}, {val_loss}')
+            early_stopping(val_loss)
+            if early_stopping.early_stop:
+                print("Early stopping")
+                break
+            # Update the learning rate
+            scheduler.step(val_loss)
+        self.train_losses_list = train_losses_list
+        self.val_losses_list = val_losses_list
+        # eval model
+        self.model_eval(self.val_dataloader, char_to_idx, max_len, str_features, num_features)
+        return train_losses_list, val_losses_list
+    def model_eval(self, val_dataloader, char_to_idx, max_len, str_features, num_features):
+        self.model = CharTransformerModelV2(embN=len(char_to_idx),
+                                          dimN=self.train_prameter['dimN'], 
+                                          nhead=8, 
+                                          num_layers=3, 
+                                          max_lens=max_len, 
+                                          str_features=str_features, 
+                                          num_features=num_features,
+                                          layer_sizes=self.train_prameter['layer_sizes'])
+        self.model.load_state_dict(torch.load(self.best_model_path))
+        self.model.eval()
+        self.model.to('cpu')
+        val_losses = []
+        all_preds = []
+        all_targets = []
+        with torch.no_grad():
+            for batch in val_dataloader:
+                str_features_batch = {name: batch[i].to('cpu') for i, name in enumerate(str_features)}
+                num_features_batch = {name: batch[i + len(str_features)].to('cpu') for i, name in enumerate(num_features)}
+                targets = batch[-1].to('cpu').squeeze()
+                output = self.model(str_features_batch, num_features_batch)
+                preds = torch.argmax(output, dim=1)
+                all_preds.extend(preds.cpu().numpy())
+                all_targets.extend(targets.cpu().numpy())
+        accuracy = accuracy_score(all_targets, all_preds)
+        precision = precision_score(all_targets, all_preds, average='weighted')
+        recall = recall_score(all_targets, all_preds, average='weighted')
+        f1 = f1_score(all_targets, all_preds, average='weighted')
+        conf_matrix = confusion_matrix(all_targets, all_preds)
+        # print(f'Validation Loss: {val_loss:.4f}')
+        self.metrix = {
+            'accuracy': accuracy,
+            'precision': precision,
+            'recall': recall,
+            'f1_score': f1,
+            'confusion_matrix': conf_matrix
+        }
+        return self.metrix
+    def eval_binary(self, y_true, y_pred):
+        if isinstance(y_true, torch.Tensor):
+            y_true = y_true.cpu().detach().numpy()
+        if isinstance(y_pred, torch.Tensor):
+            y_pred = y_pred.cpu().detach().numpy()
+        accuracy = accuracy_score(y_true, y_pred)
+        precision = precision_score(y_true, y_pred)
+        recall = recall_score(y_true, y_pred)
+        f1 = f1_score(y_true, y_pred)
+        results = {
+            "Precision": precision,
+            "Recall": recall,
+            "F1": f1,
+            "accuracy": accuracy
+        }
+        return results
+    def get_env_file(self):
+        # 获取资源文件的路径
+        resource_path = pkg_resources.resource_filename(__name__, f'resources/embedding_env.yaml')
+        if not os.path.exists(resource_path):
+            raise FileNotFoundError(f"Resource file embedding_env.yaml not found in package.")
+        shutil.copy(resource_path, os.getcwd())
+        print(f"File embedding_env.yaml has been copied to {os.getcwd()}")
+
 
 class LSTMPredictor(nn.Module):
     def __init__(self, input_size=1, hidden_size=50, output_size=1):

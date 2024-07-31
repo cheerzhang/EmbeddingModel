@@ -12,6 +12,7 @@ from .customized_dataset import MergeDf
 from .customized_dataset import create_char_to_idx, max_len_report
 from .customized_dataset import CheckData
 from .customized_dataset import trainModel, CharTransformerModel, LSTMPredictor
+from .customized_dataset import trainModelV2, CharTransformerModelV2
 from .customized_dataset import get_version
 
 from .customized_dataset import ProcessFeatureInFit
@@ -26,11 +27,13 @@ __all__ = ['CDataset', 'create_char_to_idx', 'max_len_report', 'get_version',
         'ProcessCombineFE', 'ProcessSplitFE', 'ProcessNorm', 'MergeDf', 'ProcessConCatDF',
         'CheckData', 'trainModel', 'CharTransformerModel', 'get_5number', 'ABTestRatio',
         'MonthlyAnalysis', 'GroupAnalysis', 'LSTMPredictor', 'get_week_range', 'get_week_starts',
-        'FilterRange']
+        'FilterRange',
+        'trainModelV2', 'CharTransformerModelV2']
 __dataset__ = ['CDataset', 'create_char_to_idx', 'max_len_report', 'CheckData', 'get_5number']
 __fe__ = ['ProcessJson', 'ProcessFilter', 'ProcessStr', 'ProcessCombineFE', 
           'ProcessAge', 'PrcocessDate', 'ProcessNumer', 'ProcessSplitFE', 'MergeDf',
           'ProcessDInDate', 'ProcessNorm',
           'ProcessFeatureInFit', 'ProcessConCatDF', 'FilterRange']
-__models__ = ['trainModel', 'CharTransformerModel', 'LSTMPredictor']
+__models__ = ['trainModel', 'CharTransformerModel', 'LSTMPredictor',
+              'trainModelV2', 'CharTransformerModelV2']
 __analysis__= ['MonthlyAnalysis', 'GroupAnalysis', 'get_week_range', 'get_week_starts', 'ABTestRatio']
