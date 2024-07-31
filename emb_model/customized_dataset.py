@@ -115,7 +115,7 @@ class CharTransformerModelV2(nn.Module):
             layers.append(nn.Linear(input_size, layer_size))
             layers.append(nn.BatchNorm1d(layer_size))
             layers.append(nn.ReLU())
-            layers.append(nn.Dropout(0.1))
+            layers.append(nn.Dropout(0.5))
             input_size = layer_size
         layers.append(nn.Linear(input_size, 4))  # 输出层，4个类别
         self.classifier = nn.Sequential(*layers)
