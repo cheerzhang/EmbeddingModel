@@ -93,7 +93,7 @@ class PositionalEncoding(nn.Module):
 
 class CharTransformerModelV2(nn.Module):
     def __init__(self, embN, dimN_dict, nhead, num_layers, max_lens, str_features, num_features, layer_sizes):
-        super(CharTransformerModel, self).__init__()
+        super(CharTransformerModelV2, self).__init__()
         self.embeddings = nn.ModuleDict({
             feature: nn.Embedding(num_embeddings=embN, embedding_dim=dimN_dict[feature])
             for feature in str_features
@@ -375,7 +375,6 @@ class trainModelV2:
         self.val_dataloader = None
         self.train_prameter = {
             'batch_size': 32,
-            'dimN': 128,
             'patience': 10,
             'lr': 0.01,
             'char_to_idx': {},
