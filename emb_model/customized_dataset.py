@@ -483,9 +483,9 @@ class trainModelV2:
         return train_losses_list, val_losses_list
     def model_eval(self, val_dataloader, char_to_idx, max_len, str_features, num_features):
         self.model = CharTransformerModelV2(embN=len(char_to_idx),
-                                          dimN=self.train_prameter['dimN'], 
-                                          nhead=8, 
-                                          num_layers=3, 
+                                          dimN_dict=self.train_prameter['dimN_dict'], 
+                                          nhead=self.train_prameter['nhead'],
+                                          num_layers=self.train_prameter['num_layers'],
                                           max_lens=max_len, 
                                           str_features=str_features, 
                                           num_features=num_features,
