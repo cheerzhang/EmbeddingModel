@@ -1069,3 +1069,25 @@ class FilterRange(BaseEstimator):
                 X_ = X_[(X_[self.column]>self.range_min) & (X_[self.column]<self.range_max)]
         return X_
     
+
+# same item in array mapping
+# for df['same_item'] is an array for item_id, map all the same item id into map
+def update_item_mapping(item, df, same_item_map, same_item_name = 'same_item'):
+    df_ = df.copy()
+    filtered_df = df_[df_[same_item_name].apply(lambda x: item in x.split(','))]
+    # get merged items list
+    merged_ = []
+    for items in filtered_df[same_item_name]:
+        merged_.extend(items.split(','))
+        merged_ = list(set(merged_))
+    # insert or update
+    if item not in same_item_map.keys() and all(item not in values for values in same_item_map.values()):
+        same_item_map[item] = merged_
+    else:
+        existing_key = None
+        for key, values in same_item_map.items():
+            if item in values:
+                existing_key = key
+        if existing_key:
+            same_item_map[existing_key] = list(set(same_item_map[existing_key] + merged_))  # 合并并去重
+    return same_item_map
