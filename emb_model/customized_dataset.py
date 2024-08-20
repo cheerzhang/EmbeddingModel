@@ -1089,5 +1089,20 @@ def update_item_mapping(item, df, same_item_map, same_item_name = 'same_item'):
             if item in values:
                 existing_key = key
         if existing_key:
-            same_item_map[existing_key] = list(set(same_item_map[existing_key] + merged_))  # 合并并去重
+            current_ = same_item_map[existing_key]
+            new_ = merged_
+            same_item_map[existing_key] = list(set(current_ + new_)) 
     return same_item_map
+
+
+def update_map_from_another_map(map1, map2, df, column_map1 = 'same_item', column_map2 = 'id'):
+    df_ = df.copy()
+    for key, value in map1.items():
+        filtered_df = df_[df_[column_map1].apply(lambda x: key in x.split(','))]
+        if key not in map2.keys():
+            map2[key] = list(set(filtered_df[column_map2].values.tolist()))
+        else:
+            current_uuids = map2[key]
+            new_uuids = filtered_df[column_map2].values.tolist()
+            map2[key] = list(set(current_uuids + new_uuids))  
+    return map2

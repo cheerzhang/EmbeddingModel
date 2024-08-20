@@ -22,7 +22,7 @@ from .customized_dataset import MonthlyAnalysis, GroupAnalysis, ABTestRatio, Fil
 from .customized_dataset import get_week_range, get_week_starts
 
 
-from .customized_dataset import update_item_mapping
+from .customized_dataset import update_item_mapping, update_map_from_another_map
 
 
 __all__ = ['CDataset', 'create_char_to_idx', 'max_len_report', 'get_version',
@@ -33,13 +33,13 @@ __all__ = ['CDataset', 'create_char_to_idx', 'max_len_report', 'get_version',
         'MonthlyAnalysis', 'GroupAnalysis', 'LSTMPredictor', 'get_week_range', 'get_week_starts',
         'FilterRange',
         'trainModelV2', 'CharTransformerModelV2',
-        'update_item_mapping']
+        'update_item_mapping', 'update_map_from_another_map']
 __dataset__ = ['CDataset', 'create_char_to_idx', 'max_len_report', 'CheckData', 'get_5number']
 __fe__ = ['ProcessJson', 'ProcessFilter', 'ProcessStr', 'ProcessCombineFE', 
           'ProcessAge', 'PrcocessDate', 'ProcessNumer', 'ProcessSplitFE', 'MergeDf',
           'ProcessDInDate', 'ProcessNorm',
           'ProcessFeatureInFit', 'ProcessConCatDF', 'FilterRange',
-          'update_item_mapping']
+          'update_item_mapping', 'update_map_from_another_map']
 __models__ = ['trainModel', 'CharTransformerModel', 'LSTMPredictor',
               'trainModelV2', 'CharTransformerModelV2']
 __analysis__= ['MonthlyAnalysis', 'GroupAnalysis', 'get_week_range', 'get_week_starts', 'ABTestRatio']
