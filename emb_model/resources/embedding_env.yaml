@@ -17,4 +17,4 @@ dependencies:
     - scikit-learn==1.5.1
     - scipy==1.11.4
     - torch==2.3.1
-    - emb-model==0.0.47
+    - emb-model==0.2.4
