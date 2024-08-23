@@ -1106,3 +1106,18 @@ def update_map_from_another_map(map1, map2, df, column_map1 = 'same_item', colum
             new_uuids = filtered_df[column_map2].values.tolist()
             map2[key] = list(set(current_uuids + new_uuids))  
     return map2
+
+
+
+#######################################
+#          XGB for regression        #
+#######################################
+class trainXGBregression:
+    def __init__(self):
+        self.name = 'xgb regression training'
+    def correlation(self, df, features, label):
+        df_ = df[features + [label]].copy()
+        correlation_matrix = df_[features + [label]].corr()
+        correlation_with_label = correlation_matrix[label].drop(label)
+        correlation_df = correlation_with_label.to_frame()
+        return correlation_df

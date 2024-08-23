@@ -23,7 +23,7 @@ from .customized_dataset import get_week_range, get_week_starts
 
 
 from .customized_dataset import update_item_mapping, update_map_from_another_map
-
+from .customized_dataset import trainXGBregression
 
 __all__ = ['CDataset', 'create_char_to_idx', 'max_len_report', 'get_version',
         'ProcessJson', 'ProcessFilter', 'ProcessStr', 'ProcessNumer',
@@ -33,7 +33,8 @@ __all__ = ['CDataset', 'create_char_to_idx', 'max_len_report', 'get_version',
         'MonthlyAnalysis', 'GroupAnalysis', 'LSTMPredictor', 'get_week_range', 'get_week_starts',
         'FilterRange',
         'trainModelV2', 'CharTransformerModelV2',
-        'update_item_mapping', 'update_map_from_another_map']
+        'update_item_mapping', 'update_map_from_another_map',
+        'trainXGBregression']
 __dataset__ = ['CDataset', 'create_char_to_idx', 'max_len_report', 'CheckData', 'get_5number']
 __fe__ = ['ProcessJson', 'ProcessFilter', 'ProcessStr', 'ProcessCombineFE', 
           'ProcessAge', 'PrcocessDate', 'ProcessNumer', 'ProcessSplitFE', 'MergeDf',
@@ -41,5 +42,6 @@ __fe__ = ['ProcessJson', 'ProcessFilter', 'ProcessStr', 'ProcessCombineFE',
           'ProcessFeatureInFit', 'ProcessConCatDF', 'FilterRange',
           'update_item_mapping', 'update_map_from_another_map']
 __models__ = ['trainModel', 'CharTransformerModel', 'LSTMPredictor',
-              'trainModelV2', 'CharTransformerModelV2']
+              'trainModelV2', 'CharTransformerModelV2',
+              'trainXGBregression']
 __analysis__= ['MonthlyAnalysis', 'GroupAnalysis', 'get_week_range', 'get_week_starts', 'ABTestRatio']
