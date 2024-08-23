@@ -32,7 +32,6 @@ setuptools.setup(
         'scikit-learn==1.5.1',
         'numpy==1.26.4',
         'pandas==2.1.4',
-        'mlflow==2.11.3',
         'xgboost==2.1.1'
     ],
     python_requires=">=3.9.0",
