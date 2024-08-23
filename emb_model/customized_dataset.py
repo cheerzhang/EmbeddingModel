@@ -1145,10 +1145,13 @@ class trainXGBregression:
         dvalid = xgb.DMatrix(valid_df[features], label=valid_df[label])
         y_pred = self.model.predict(dvalid)
         mse, mae, mape, rmse = self.calculate_metrics(valid_df[label].values, y_pred)
-        print(f'MSE: {mse:.4f}')
-        print(f'MAE: {mae:.4f}')
-        print(f'MAPE: {mape:.2f}%')
-        print(f'RMSE: {rmse:.4f}')
+        result = {
+            'MSE': mse,
+            'MAE': mae,
+            'MAPE': mape,
+            'RMSE': rmse
+        }
+        return result
     def calculate_metrics(self, y_true, y_pred):
         y_true = np.array(y_true)
         y_pred = np.array(y_pred)
