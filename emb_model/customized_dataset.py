@@ -1138,4 +1138,15 @@ class trainXGBregression:
         num_round = 1000
         evals_result = {}
         bst = xgb.train(params, dtrain, num_round, evallist, evals_result=evals_result, early_stopping_rounds=10)
-        return evals_result, bst
+        y_pred = bst.predict(dvalid)
+        mse, mae, mape, rmse = self.calculate_metrics(valid_df[label].values, y_pred)
+        return evals_result, bst, {mse, mae, mape, rmse}
+    def calculate_metrics(self, y_true, y_pred):
+        y_true = np.array(y_true)
+        y_pred = np.array(y_pred)
+        mse = np.mean((y_pred - y_true) ** 2)
+        mae = np.mean(np.abs(y_pred - y_true))
+        mape = np.mean(np.abs((y_true - y_pred) / y_true)) * 100
+        rmse = np.sqrt(mse)
+        return mse, mae, mape, rmse
+
