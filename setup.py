@@ -7,7 +7,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name='emb-model',
-    version='0.2.8',
+    version='0.2.9',
     author="ZhangLe",
     author_email="zhangle@gmail.com",
     description="simple useing for embedding models",
@@ -32,7 +32,8 @@ setuptools.setup(
         'scikit-learn==1.5.1',
         'numpy==1.26.4',
         'pandas==2.1.4',
-        'mlflow==2.11.3'
+        'mlflow==2.11.3',
+        'xgboost==2.1.1'
     ],
     python_requires=">=3.9.0",
 )

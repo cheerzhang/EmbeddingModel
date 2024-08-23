@@ -1112,6 +1112,8 @@ def update_map_from_another_map(map1, map2, df, column_map1 = 'same_item', colum
 #######################################
 #          XGB for regression        #
 #######################################
+import xgboost as xgb
+
 class trainXGBregression:
     def __init__(self):
         self.name = 'xgb regression training'
@@ -1121,3 +1123,19 @@ class trainXGBregression:
         correlation_with_label = correlation_matrix[label].drop(label)
         correlation_df = correlation_with_label.to_frame()
         return correlation_df
+    def train(self, train_df, valid_df, features, label):
+        dtrain = xgb.DMatrix(train_df[features], label=train_df[label])
+        dvalid = xgb.DMatrix(valid_df[features], label=valid_df[label])
+        params = {
+            'objective': 'reg:squarederror',
+            'eval_metric': 'rmse',
+            'eta': 0.1,
+            'max_depth': 6,
+            'subsample': 0.8,
+            'colsample_bytree': 0.8,
+        }
+        evallist = [(dtrain, 'train'), (dvalid, 'eval')]
+        num_round = 1000
+        evals_result = {}
+        bst = xgb.train(params, dtrain, num_round, evallist, evals_result=evals_result, early_stopping_rounds=10)
+        return evals_result, bst
