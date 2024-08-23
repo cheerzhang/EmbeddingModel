@@ -1117,6 +1117,7 @@ import xgboost as xgb
 class trainXGBregression:
     def __init__(self):
         self.name = 'xgb regression training'
+        self.model = None
     def correlation(self, df, features, label):
         df_ = df[features + [label]].copy()
         correlation_matrix = df_[features + [label]].corr()
@@ -1138,9 +1139,16 @@ class trainXGBregression:
         num_round = 1000
         evals_result = {}
         bst = xgb.train(params, dtrain, num_round, evallist, evals_result=evals_result, early_stopping_rounds=10)
-        y_pred = bst.predict(dvalid)
+        self.model = bst
+        return evals_result, bst
+    def eval_model(self, valid_df, features, label):
+        dvalid = xgb.DMatrix(valid_df[features], label=valid_df[label])
+        y_pred = self.model.predict(dvalid)
         mse, mae, mape, rmse = self.calculate_metrics(valid_df[label].values, y_pred)
-        return evals_result, bst, {mse, mae, mape, rmse}
+        print(f'MSE: {mse:.4f}')
+        print(f'MAE: {mae:.4f}')
+        print(f'MAPE: {mape:.2f}%')
+        print(f'RMSE: {rmse:.4f}')
     def calculate_metrics(self, y_true, y_pred):
         y_true = np.array(y_true)
         y_pred = np.array(y_pred)
