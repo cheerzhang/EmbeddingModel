@@ -5,7 +5,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 import math, os, shutil, pkg_resources
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix, roc_auc_score
 from datetime import datetime, timedelta
 import statsmodels.api as sm
 
@@ -1115,6 +1115,56 @@ def update_map_from_another_map(map1, map2, df, column_map1 = 'same_item', colum
 #          XGB for regression        #
 #######################################
 import xgboost as xgb
+
+class trainXGBbinary:
+    def __init__(self):
+        self.name = 'xgb bianry classification training'
+        self.model = None
+        self.params = {
+            'objective': 'binary:logistic',
+            'eval_metric': 'rmse',
+            'eta': 0.1,
+            'max_depth': 6,
+            'lambda': 1.0,     # L2
+            'alpha': 0.1,      # L1
+            'subsample': 0.8,
+            'colsample_bytree': 0.8,
+        }
+    def config_train_parameter(self, lambda_ = 1.0, alpha = 0.1):
+        self.params['lambda'] = lambda_
+        self.params['alpha'] = alpha
+        return self.params
+    def train(self, train_df, valid_df, features, label):
+        dtrain = xgb.DMatrix(train_df[features], label=train_df[label])
+        dvalid = xgb.DMatrix(valid_df[features], label=valid_df[label])
+        evallist = [(dtrain, 'train'), (dvalid, 'eval')]
+        num_round = 1000
+        evals_result = {}
+        bst = xgb.train(self.params, dtrain, num_round, evallist, evals_result=evals_result, early_stopping_rounds=10)
+        self.model = bst
+        return evals_result, bst
+    def eval_model(self, valid_df, features, label):
+        dvalid = xgb.DMatrix(valid_df[features], label=valid_df[label])
+        y_pred_proba = self.model.predict(dvalid)
+        y_pred = [1 if prob > 0.5 else 0 for prob in y_pred_proba]  # 将概率转为二元分类标签
+        accuracy, precision, recall, f1, auc = self.calculate_metrics(valid_df[label].values, y_pred, y_pred_proba)
+        result = {
+            'Accuracy': accuracy,
+            'Precision': precision,
+            'Recall': recall,
+            'F1-Score': f1,
+            'AUC': auc
+        }
+        return result
+    def calculate_metrics(self, y_true, y_pred, y_pred_proba):
+        accuracy = accuracy_score(y_true, y_pred)
+        precision = precision_score(y_true, y_pred)
+        recall = recall_score(y_true, y_pred)
+        f1 = f1_score(y_true, y_pred)
+        auc = roc_auc_score(y_true, y_pred_proba)
+        return accuracy, precision, recall, f1, auc
+
+
 
 class trainXGBregression:
     def __init__(self):
