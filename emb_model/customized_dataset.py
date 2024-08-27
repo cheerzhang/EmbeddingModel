@@ -762,6 +762,8 @@ class ProcessDInDate(BaseEstimator):
                 X_[f"{self.date_column}_{self.period}"] = X_[self.date_column].dt.year
             if self.period == 'h':
                 X_[f"{self.date_column}_{self.period}"] = X_[self.date_column].dt.hour
+            if self.period == 'W':
+                X_[f"{self.date_column}_{self.period}"] = X_[self.date_column].dt.week
             if self.period == 'w':
                 X_[f"{self.date_column}_{self.period}"] = X_[self.date_column].dt.weekday
         return X_
