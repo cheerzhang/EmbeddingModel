@@ -1120,27 +1120,33 @@ class trainXGBregression:
     def __init__(self):
         self.name = 'xgb regression training'
         self.model = None
+        self.params = {
+            'objective': 'reg:squarederror',
+            'eval_metric': 'rmse',
+            'eta': 0.1,
+            'max_depth': 6,
+            'lambda': 1.0,     # L2
+            'alpha': 0.1,      # L1
+            'subsample': 0.8,
+            'colsample_bytree': 0.8,
+        }
     def correlation(self, df, features, label):
         df_ = df[features + [label]].copy()
         correlation_matrix = df_[features + [label]].corr()
         correlation_with_label = correlation_matrix[label].drop(label)
         correlation_df = correlation_with_label.to_frame()
         return correlation_df
+    def config_train_parameter(self, lambda_ = 1.0, alpha = 0.1):
+        self.params['lambda'] = lambda_
+        self.params['alpha'] = alpha
+        return self.params
     def train(self, train_df, valid_df, features, label):
         dtrain = xgb.DMatrix(train_df[features], label=train_df[label])
         dvalid = xgb.DMatrix(valid_df[features], label=valid_df[label])
-        params = {
-            'objective': 'reg:squarederror',
-            'eval_metric': 'rmse',
-            'eta': 0.1,
-            'max_depth': 6,
-            'subsample': 0.8,
-            'colsample_bytree': 0.8,
-        }
         evallist = [(dtrain, 'train'), (dvalid, 'eval')]
         num_round = 1000
         evals_result = {}
-        bst = xgb.train(params, dtrain, num_round, evallist, evals_result=evals_result, early_stopping_rounds=10)
+        bst = xgb.train(self.params, dtrain, num_round, evallist, evals_result=evals_result, early_stopping_rounds=10)
         self.model = bst
         return evals_result, bst
     def eval_model(self, valid_df, features, label):

@@ -7,7 +7,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name='emb-model',
-    version='0.2.14',
+    version='0.2.15',
     author="ZhangLe",
     author_email="zhangle@gmail.com",
     description="simple useing for embedding models",
