@@ -1122,7 +1122,7 @@ class trainXGBbinary:
         self.model = None
         self.params = {
             'objective': 'binary:logistic',
-            'eval_metric': 'rmse',
+            'eval_metric': 'logloss',
             'eta': 0.1,
             'max_depth': 6,
             'lambda': 1.0,     # L2
