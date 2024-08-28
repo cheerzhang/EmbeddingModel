@@ -1129,12 +1129,16 @@ class trainXGBbinary:
             'alpha': 0.1,      # L1
             'subsample': 0.8,
             'colsample_bytree': 0.8,
+            'scale_pos_weight': 1  # weight
         }
     def config_train_parameter(self, lambda_ = 1.0, alpha = 0.1):
         self.params['lambda'] = lambda_
         self.params['alpha'] = alpha
         return self.params
     def train(self, train_df, valid_df, features, label):
+        neg, pos = np.bincount(train_df[label])
+        scale_pos_weight = neg / pos
+        self.params['scale_pos_weight'] = scale_pos_weight 
         dtrain = xgb.DMatrix(train_df[features], label=train_df[label])
         dvalid = xgb.DMatrix(valid_df[features], label=valid_df[label])
         evallist = [(dtrain, 'train'), (dvalid, 'eval')]
@@ -1146,7 +1150,7 @@ class trainXGBbinary:
     def eval_model(self, valid_df, features, label):
         dvalid = xgb.DMatrix(valid_df[features], label=valid_df[label])
         y_pred_proba = self.model.predict(dvalid)
-        y_pred = [1 if prob > 0.5 else 0 for prob in y_pred_proba]  # 将概率转为二元分类标签
+        y_pred = [1 if prob > 0.5 else 0 for prob in y_pred_proba]  # set as 0.5 
         accuracy, precision, recall, f1, auc = self.calculate_metrics(valid_df[label].values, y_pred, y_pred_proba)
         result = {
             'Accuracy': accuracy,
