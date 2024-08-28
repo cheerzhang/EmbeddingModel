@@ -1256,7 +1256,7 @@ class trainGRUregression:
         self.batch_size = 32
         self.model = None
         self.best_model_path = 'gru_model.pth'
-    def sequences_data(self, df, features, label, gourp_id):
+    def create_sequences(self, df, features, label, gourp_id):
         df_ = df.copy()
         f_ = features + [label]
         sequences = []
