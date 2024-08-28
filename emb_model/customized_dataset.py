@@ -1269,9 +1269,9 @@ class trainGRUregression:
                 sequences.append(sequence)
                 labels.append(label)
         return np.array(sequences), np.array(labels)
-    def train(self, train_df, valid_df):
-        X_train, y_train = self.create_sequences(train_df, self.n_step)
-        X_valid, y_valid = self.create_sequences(valid_df, self.n_step)
+    def train(self, train_df, valid_df, features, label, gourp_id):
+        X_train, y_train = self.create_sequences(train_df, features, label, gourp_id)
+        X_valid, y_valid = self.create_sequences(valid_df, features, label, gourp_id)
         print(f"Shape of train X: {X_train.shape}, Shape of train y: {y_train.shape}")
         print(f"Shape of valid X: {X_valid.shape}, Shape of valid y: {y_valid.shape}")
         X_train_tensor = torch.tensor(X_train, dtype=torch.float32)
