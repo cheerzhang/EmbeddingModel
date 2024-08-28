@@ -1339,5 +1339,46 @@ class trainGRUregression:
                 if epochs_no_improve >= patience:
                     print(f'Early stopping at epoch {epoch+1}')
                     break
+        self.model.eval()
+        with torch.no_grad():
+            test_loss = 0
+            for inputs, targets in valid_loader:
+                inputs, targets = inputs.to(device), targets.to(device)
+                outputs = self.model(inputs)
+                loss = criterion(outputs, targets.unsqueeze(1))
+                test_loss += loss.item()
+        test_loss /= len(train_loader)
+        print(f'Eval model Loss: {test_loss:.4f}')
         return train_loss_array, valid_loss_array
+    def create_sequences_for_prediction(self, df, features, label, group_id):
+        df_ = df.copy()
+        f_ = features + [label]
+        sequences = []
+        indices = []
+        for group_id, group_data in df_.groupby(group_id):
+            group_data = group_data[f_].copy()
+            group_data_index = group_data.index
+            group_data = group_data.values
+            for i in range(len(group_data) - self.n_step):
+                sequence = group_data[i:i + self.n_step, :-1]  # 前 n_steps 天的数据作为 feature
+                sequences.append(sequence)
+                indices.append(group_data_index[i + self.n_step])  # 保存真实的索引
+        return np.array(sequences), indices
+    def predict(self, test_df, features_, label, group_id):
+        new_data = test_df.copy()
+        X_new, indices = self.create_sequences_for_prediction(new_data, features_, label, group_id)
+        X_new_tensor = torch.tensor(X_new, dtype=torch.float32)
+        self.model.eval()
+        with torch.no_grad():
+            predictions = self.model(X_new_tensor).numpy()
+        return indices, predictions
+    def predict_model(self, test_df, features_, label, group_id):
+        new_data = test_df.copy()
+        predicted_df = new_data.iloc[self.n_step:].copy()
+        predicted_df['predicted_label'] = np.nan
+        indices, predictions = self.predict(test_df, features_, label, group_id)
+        for idx, prediction in zip(indices, predictions):
+            predicted_df.loc[idx, 'predicted_label'] = prediction
+        return predicted_df
+
 
