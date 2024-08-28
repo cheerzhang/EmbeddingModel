@@ -23,7 +23,7 @@ from .customized_dataset import get_week_range, get_week_starts
 
 
 from .customized_dataset import update_item_mapping, update_map_from_another_map
-from .customized_dataset import trainXGBregression, trainXGBbinary, GRUModel
+from .customized_dataset import trainXGBregression, trainXGBbinary, GRUModel, trainGRUregression
 
 __all__ = ['CDataset', 'create_char_to_idx', 'max_len_report', 'get_version',
         'ProcessJson', 'ProcessFilter', 'ProcessStr', 'ProcessNumer',
