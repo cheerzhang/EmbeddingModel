@@ -1112,9 +1112,10 @@ def update_map_from_another_map(map1, map2, df, column_map1 = 'same_item', colum
 
 
 #######################################
-#          XGB for regression        #
+#                   XGB               #
 #######################################
 import xgboost as xgb
+
 
 class trainXGBbinary:
     def __init__(self):
@@ -1222,4 +1223,28 @@ class trainXGBregression:
         mape = np.mean(np.abs((y_true - y_pred) / y_true)) * 100
         rmse = np.sqrt(mse)
         return mse, mae, mape, rmse
+
+
+########################################
+#            GRU  LSTM                 #
+########################################
+import torch
+import torch.nn as nn
+import torch.optim as optim
+
+class GRUModel(nn.Module):
+    def __init__(self, input_dim, hidden_dim, output_dim, num_layers):
+        super(GRUModel, self).__init__()
+        self.hidden_dim = hidden_dim
+        self.num_layers = num_layers
+        self.gru = nn.GRU(input_dim, hidden_dim, num_layers, batch_first=True)
+        self.fc = nn.Linear(hidden_dim, output_dim)
+    
+    def forward(self, x):
+        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_dim).to(x.device)
+        out, _ = self.gru(x, h0)
+        out = out[:, -1, :]
+        out = self.fc(out)
+        return out
+
 
