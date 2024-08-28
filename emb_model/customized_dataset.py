@@ -1231,6 +1231,8 @@ class trainXGBregression:
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from torch.utils.data import DataLoader, TensorDataset
+
 
 class GRUModel(nn.Module):
     def __init__(self, input_dim, hidden_dim, output_dim, num_layers):
@@ -1247,4 +1249,95 @@ class GRUModel(nn.Module):
         out = self.fc(out)
         return out
 
+class trainGRUregression:
+    def __init__(self, n_steps = 5):
+        self.name = 'train GRU regression'
+        self.n_step = n_steps
+        self.batch_size = 32
+        self.model = None
+        self.best_model_path = 'gru_model.pth'
+    def sequences_data(self, df, features, label, gourp_id):
+        df_ = df.copy()
+        f_ = features + [label]
+        sequences = []
+        labels = []
+        for group_id, group_data in df_.groupby(gourp_id):
+            group_data = group_data[f_].values
+            for i in range(len(group_data) - self.n_step):
+                sequence = group_data[i:i + self.n_step, :-1]  # feature
+                label = group_data[i + self.n_step, -1]  # label
+                sequences.append(sequence)
+                labels.append(label)
+        return np.array(sequences), np.array(labels)
+    def train(self, train_df, valid_df):
+        X_train, y_train = self.create_sequences(train_df, self.n_step)
+        X_valid, y_valid = self.create_sequences(valid_df, self.n_step)
+        print(f"Shape of train X: {X_train.shape}, Shape of train y: {y_train.shape}")
+        print(f"Shape of valid X: {X_valid.shape}, Shape of valid y: {y_valid.shape}")
+        X_train_tensor = torch.tensor(X_train, dtype=torch.float32)
+        y_train_tensor = torch.tensor(y_train, dtype=torch.float32)
+        X_valid_tensor = torch.tensor(X_valid, dtype=torch.float32)
+        y_valid_tensor = torch.tensor(y_valid, dtype=torch.float32)
+        train_dataset = TensorDataset(X_train_tensor, y_train_tensor)
+        valid_dataset = TensorDataset(X_valid_tensor, y_valid_tensor)
+        train_loader = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True)
+        valid_loader = DataLoader(valid_dataset, batch_size=self.batch_size, shuffle=False)
+        input_dim = X_train.shape[2]
+        hidden_dim = 64
+        output_dim = 1
+        num_layers = 2
+        self.model = GRUModel(input_dim, hidden_dim, output_dim, num_layers)
+        best_val_loss = float('inf')
+        criterion = nn.MSELoss()
+        optimizer = optim.Adam(self.model.parameters(), lr=0.001)
+        scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=5, verbose=True)
+        if torch.backends.mps.is_available() and torch.backends.mps.is_built():
+            device = torch.device("mps")
+        else:
+            device = torch.device("cpu")
+        self.model.to(device)
+        num_epochs = 1000
+        patience = 10
+        best_valid_loss = np.inf
+        epochs_no_improve = 0
+        train_loss_array = []
+        valid_loss_array = []
+        for epoch in range(num_epochs):
+            self.model.train()
+            train_loss = 0
+            for inputs, targets in train_loader:
+                inputs, targets = inputs.to(device), targets.to(device)
+                outputs = self.model(inputs)
+                loss = criterion(outputs, targets.unsqueeze(1))
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+                train_loss += loss.item()
+            train_loss /= len(train_loader)
+            train_loss_array.append(train_loss)
+            self.model.eval() 
+            valid_loss = 0
+            with torch.no_grad():
+                for inputs, targets in valid_loader:
+                    inputs, targets = inputs.to(device), targets.to(device)
+                    outputs = self.model(inputs)
+                    loss = criterion(outputs, targets.unsqueeze(1))
+                    valid_loss += loss.item()
+            valid_loss /= len(valid_loader)
+            valid_loss_array.append(valid_loss)
+            print(f'Epoch [{epoch+1}/{num_epochs}], Train Loss: {train_loss:.4f}, Valid Loss: {valid_loss:.4f}')
+            scheduler.step(valid_loss)
+            if valid_loss < best_val_loss:
+                best_val_loss = valid_loss
+                torch.save(self.model.state_dict(), self.best_model_path)
+                print(f"Best model saved with validation loss: {valid_loss:.6f}")
+            if valid_loss < best_valid_loss:
+                best_valid_loss = valid_loss
+                epochs_no_improve = 0
+            else:
+                epochs_no_improve += 1
+                if epochs_no_improve >= patience:
+                    print(f'Early stopping at epoch {epoch+1}')
+                    break
+        return train_loss_array, valid_loss_array
 

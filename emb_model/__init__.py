@@ -34,7 +34,7 @@ __all__ = ['CDataset', 'create_char_to_idx', 'max_len_report', 'get_version',
         'FilterRange',
         'trainModelV2', 'CharTransformerModelV2',
         'update_item_mapping', 'update_map_from_another_map',
-        'trainXGBregression', 'trainXGBbinary', 'GRUModel']
+        'trainXGBregression', 'trainXGBbinary', 'GRUModel', 'trainGRUregression']
 __dataset__ = ['CDataset', 'create_char_to_idx', 'max_len_report', 'CheckData', 'get_5number']
 __fe__ = ['ProcessJson', 'ProcessFilter', 'ProcessStr', 'ProcessCombineFE', 
           'ProcessAge', 'PrcocessDate', 'ProcessNumer', 'ProcessSplitFE', 'MergeDf',
@@ -43,5 +43,5 @@ __fe__ = ['ProcessJson', 'ProcessFilter', 'ProcessStr', 'ProcessCombineFE',
           'update_item_mapping', 'update_map_from_another_map']
 __models__ = ['trainModel', 'CharTransformerModel', 'LSTMPredictor',
               'trainModelV2', 'CharTransformerModelV2',
-              'trainXGBregression', 'trainXGBbinary', 'GRUModel']
+              'trainXGBregression', 'trainXGBbinary', 'GRUModel', 'trainGRUregression']
 __analysis__= ['MonthlyAnalysis', 'GroupAnalysis', 'get_week_range', 'get_week_starts', 'ABTestRatio']
