@@ -1365,9 +1365,11 @@ class trainGRUregression:
                 indices.append(group_data_index[i + self.n_step])  # 保存真实的索引
         return np.array(sequences), indices
     def predict(self, test_df, features_, label, group_id):
+
         new_data = test_df.copy()
         X_new, indices = self.create_sequences_for_prediction(new_data, features_, label, group_id)
-        X_new_tensor = torch.tensor(X_new, dtype=torch.float32)
+        X_new_tensor = torch.tensor(X_new, dtype=torch.float32).to('cpu')
+        self.model.to('cpu')
         self.model.eval()
         with torch.no_grad():
             predictions = self.model(X_new_tensor).numpy()
