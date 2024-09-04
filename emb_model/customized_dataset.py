@@ -578,6 +578,9 @@ class ProcessJson(BaseEstimator):
     def process_json(self, row, key_names):
         try:
             parsed_json = json.loads(row)
+            # check if it is []
+            if parsed_json == []:
+                return None
             value = parsed_json
             for key in key_names:
                 if key in value:
