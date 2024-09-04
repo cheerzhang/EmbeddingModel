@@ -1256,6 +1256,10 @@ class trainGRUregression:
         self.batch_size = 32
         self.model = None
         self.best_model_path = 'gru_model.pth'
+        self.parameter = {
+           'hidden_dim': 64,
+           'num_layers' : 2
+        }
     def create_sequences(self, df, features, label, gourp_id):
         df_ = df.copy()
         f_ = features + [label]
@@ -1269,6 +1273,10 @@ class trainGRUregression:
                 sequences.append(sequence)
                 labels.append(label)
         return np.array(sequences), np.array(labels)
+    def setconfig(self, hidden_dim=64, num_layers=2):
+        self.parameter['hidden_dim'] = hidden_dim
+        self.parameter['num_layers'] = num_layers
+        return self.parameter
     def train(self, train_df, valid_df, features, label, gourp_id):
         X_train, y_train = self.create_sequences(train_df, features, label, gourp_id)
         X_valid, y_valid = self.create_sequences(valid_df, features, label, gourp_id)
@@ -1283,14 +1291,15 @@ class trainGRUregression:
         train_loader = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True)
         valid_loader = DataLoader(valid_dataset, batch_size=self.batch_size, shuffle=False)
         input_dim = X_train.shape[2]
-        hidden_dim = 64
+        hidden_dim = self.parameter['hidden_dim']
         output_dim = 1
-        num_layers = 2
+        num_layers = self.parameter['num_layers']
         self.model = GRUModel(input_dim, hidden_dim, output_dim, num_layers)
         best_val_loss = float('inf')
         criterion = nn.MSELoss()
-        optimizer = optim.Adam(self.model.parameters(), lr=0.001)
-        scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=5, verbose=True)
+        optimizer = torch.optim.Adam(self.model.parameters(), lr=0.001, weight_decay=1e-5)
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', patience=10, factor=0.5)       
+        
         if torch.backends.mps.is_available() and torch.backends.mps.is_built():
             device = torch.device("mps")
         else:
