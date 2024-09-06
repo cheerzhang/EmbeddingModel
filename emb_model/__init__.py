@@ -18,7 +18,7 @@ from .customized_dataset import get_version
 from .customized_dataset import ProcessFeatureInFit
 from .customized_dataset import ProcessConCatDF
 from .customized_dataset import get_5number
-from .customized_dataset import MonthlyAnalysis, GroupAnalysis, ABTestRatio, FilterRange
+from .customized_dataset import MonthlyAnalysis, GroupAnalysis, ABTestRatio, FilterRange, OrderIndex
 from .customized_dataset import get_week_range, get_week_starts
 
 
@@ -28,7 +28,7 @@ from .customized_dataset import trainXGBregression, trainXGBbinary, GRUModel, tr
 __all__ = ['CDataset', 'create_char_to_idx', 'max_len_report', 'get_version',
         'ProcessJson', 'ProcessFilter', 'ProcessStr', 'ProcessNumer',
         'ProcessAge', 'PrcocessDate', 'ProcessDInDate', 'ProcessFeatureInFit', 'ProcessFilters',
-        'ProcessCombineFE', 'ProcessSplitFE', 'ProcessNorm', 'MergeDf', 'ProcessConCatDF',
+        'ProcessCombineFE', 'ProcessSplitFE', 'ProcessNorm', 'MergeDf', 'ProcessConCatDF', 'OrderIndex',
         'CheckData', 'trainModel', 'CharTransformerModel', 'get_5number', 'ABTestRatio',
         'MonthlyAnalysis', 'GroupAnalysis', 'LSTMPredictor', 'get_week_range', 'get_week_starts',
         'FilterRange',
@@ -44,4 +44,5 @@ __fe__ = ['ProcessJson', 'ProcessFilter', 'ProcessStr', 'ProcessCombineFE',
 __models__ = ['trainModel', 'CharTransformerModel', 'LSTMPredictor',
               'trainModelV2', 'CharTransformerModelV2',
               'trainXGBregression', 'trainXGBbinary', 'GRUModel', 'trainGRUregression']
-__analysis__= ['MonthlyAnalysis', 'GroupAnalysis', 'get_week_range', 'get_week_starts', 'ABTestRatio']
+__analysis__= ['MonthlyAnalysis', 'GroupAnalysis', 'get_week_range', 'get_week_starts', 'ABTestRatio',
+               'OrderIndex']

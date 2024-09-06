@@ -1075,6 +1075,20 @@ class FilterRange(BaseEstimator):
         return X_
     
 
+class OrderIndex(BaseEstimator):
+    def __init__(self, user_feature, time_feature):
+        self.user_feature = user_feature
+        self.time_feature = time_feature
+    def fit(self, X, y=None):
+        return self
+    def transform(self, X, y=None):
+        X_ = X.copy()
+        # X_.drop_duplicates(subset=[self.time_feature, self.user_feature], keep='first', inplace=True)
+        X_ = X_.set_index('id')
+        # X_ = X_.reset_index(drop=True)  # Reset index to ensure it's unique
+        X_['Order_Index'] = X_.sort_values(self.time_feature).groupby(self.user_feature).cumcount() + 1
+        return X_
+        
 # same item in array mapping
 # for df['same_item'] is an array for item_id, map all the same item id into map
 def update_item_mapping(item, df, same_item_map, same_item_name = 'same_item'):
