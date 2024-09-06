@@ -1118,6 +1118,8 @@ def update_map_from_another_map(map1, map2, df, column_map1 = 'same_item', colum
 #                   XGB               #
 #######################################
 import xgboost as xgb
+import matplotlib.pyplot as plt
+from sklearn.metrics import roc_curve
 
 
 class trainXGBbinary:
@@ -1170,6 +1172,18 @@ class trainXGBbinary:
         recall = recall_score(y_true, y_pred)
         f1 = f1_score(y_true, y_pred)
         auc = roc_auc_score(y_true, y_pred_proba)
+        # ROC curve
+        fpr, tpr, thresholds = roc_curve(y_true, y_pred_proba)
+        plt.figure()
+        plt.plot(fpr, tpr, color='darkorange', lw=2, label=f'ROC curve (AUC = {auc:.2f})')
+        plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
+        plt.xlim([0.0, 1.0])
+        plt.ylim([0.0, 1.05])
+        plt.xlabel('False Positive Rate')
+        plt.ylabel('True Positive Rate')
+        plt.title('Receiver Operating Characteristic (ROC) Curve')
+        plt.legend(loc="lower right")
+        plt.show()
         return accuracy, precision, recall, f1, auc
 
 

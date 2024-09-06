@@ -1,15 +1,15 @@
-name: my_model_env # embedding model
+name: b_score_model_env
 channels:
   - pytorch
   - conda-forge
   - defaults
 dependencies:
   - python=3.11.2
-  - pytorch
-  - mlflow
+  - pytorch  
+  - mlflow  
   - pip
-  - numpy
-  - pandas
+  - numpy  
+  - pandas  
   - scikit-learn
   - scipy
   - cloudpickle==2.2.1
@@ -17,6 +17,6 @@ dependencies:
   - pip:
     - mlflow==2.11.3
     - statsmodels
-    - torch
-    - emb-model==0.2.4
-
+    - torch  
+    - xgboost==2.1.1
+    - emb-model==0.2.28 
