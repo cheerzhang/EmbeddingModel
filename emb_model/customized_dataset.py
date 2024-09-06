@@ -1086,7 +1086,7 @@ class OrderIndex(BaseEstimator):
         # X_.drop_duplicates(subset=[self.time_feature, self.user_feature], keep='first', inplace=True)
         X_ = X_.set_index('id')
         # X_ = X_.reset_index(drop=True)  # Reset index to ensure it's unique
-        X_['Order_Index'] = X_.sort_values(self.time_feature).groupby(self.user_feature).cumcount() + 1
+        X_['O_Index'] = X_.sort_values(self.time_feature).groupby(self.user_feature).cumcount() + 1
         return X_
         
 # same item in array mapping
