@@ -1160,8 +1160,8 @@ class trainXGBbinary:
         neg, pos = np.bincount(train_df[label])
         scale_pos_weight = neg / pos
         self.params['scale_pos_weight'] = scale_pos_weight 
-        dtrain = xgb.DMatrix(train_df[features], label=train_df[label])
-        dvalid = xgb.DMatrix(valid_df[features], label=valid_df[label])
+        dtrain = xgb.DMatrix(train_df[features], label=train_df[label], missing=np.nan)
+        dvalid = xgb.DMatrix(valid_df[features], label=valid_df[label], missing=np.nan)
         evallist = [(dtrain, 'train'), (dvalid, 'eval')]
         num_round = 1000
         evals_result = {}
