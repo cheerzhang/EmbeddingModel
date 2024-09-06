@@ -1076,15 +1076,16 @@ class FilterRange(BaseEstimator):
     
 
 class OrderIndex(BaseEstimator):
-    def __init__(self, user_feature, time_feature):
+    def __init__(self, user_feature, time_feature, index_column):
         self.user_feature = user_feature
         self.time_feature = time_feature
+        self.index_column = index_column
     def fit(self, X, y=None):
         return self
     def transform(self, X, y=None):
         X_ = X.copy()
         # X_.drop_duplicates(subset=[self.time_feature, self.user_feature], keep='first', inplace=True)
-        X_ = X_.set_index('id')
+        X_ = X_.set_index(self.index_column)
         # X_ = X_.reset_index(drop=True)  # Reset index to ensure it's unique
         X_['O_Index'] = X_.sort_values(self.time_feature).groupby(self.user_feature).cumcount() + 1
         return X_

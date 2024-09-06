@@ -19,4 +19,4 @@ dependencies:
     - statsmodels
     - torch  
     - xgboost==2.1.1
-    - emb-model==0.2.30 
+    - emb-model==0.2.32
