@@ -1185,6 +1185,12 @@ class trainXGBbinary:
         plt.legend(loc="lower right")
         plt.show()
         return accuracy, precision, recall, f1, auc
+    def get_env_file(self):
+        resource_path = pkg_resources.resource_filename(__name__, f'resources/classification_xgb_env.yaml')
+        if not os.path.exists(resource_path):
+            raise FileNotFoundError(f"Resource file classification_xgb_env.yaml not found in package.")
+        shutil.copy(resource_path, os.getcwd())
+        print(f"File classification_xgb_env.yaml has been copied to {os.getcwd()}")
 
 
 
