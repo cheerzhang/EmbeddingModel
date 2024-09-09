@@ -1431,3 +1431,58 @@ class trainGRUregression:
         return predicted_df
 
 
+###################
+#    WOE  & IV    #
+###################
+from io import BytesIO
+import base64
+
+def merge_extreme_bins(bin_stats, min_bin_size=0.05):
+    bin_stats['merge'] = False
+    for i in range(len(bin_stats)):
+        if (bin_stats['good_dist'].iloc[i] == 0 or bin_stats['bad_dist'].iloc[i] == 0 or
+            bin_stats['good_dist'].iloc[i] < min_bin_size or bin_stats['bad_dist'].iloc[i] < min_bin_size):
+            bin_stats['merge'].iloc[i] = True
+    merged_stats = bin_stats[~bin_stats['merge']]
+    return merged_stats
+
+def calculate_woe_iv(df, feature, label, bins=10, fillna_value=-999, min_bin_size=0.05):
+    df[feature] = df[feature].fillna(fillna_value)
+    df['bin'] = pd.cut(df[feature], bins=bins)
+    good = df[df[label] == 0]
+    bad = df[df[label] == 1]
+    bin_stats = df.groupby('bin').agg({label: ['count', 'sum']})
+    bin_stats.columns = ['total', 'bad']
+    bin_stats['good'] = bin_stats['total'] - bin_stats['bad']
+    bin_stats['good_dist'] = bin_stats['good'] / bin_stats['good'].sum()
+    bin_stats['bad_dist'] = bin_stats['bad'] / bin_stats['bad'].sum()
+    bin_stats['woe'] = np.log((bin_stats['good_dist'] + 1e-10) / (bin_stats['bad_dist'] + 1e-10))
+    bin_stats['iv'] = (bin_stats['good_dist'] - bin_stats['bad_dist']) * bin_stats['woe']
+    # 合并极端 bin
+    bin_stats = merge_extreme_bins(bin_stats, min_bin_size=min_bin_size)
+    bin_stats.replace([np.inf, -np.inf], 0, inplace=True)
+    bin_stats.fillna(0, inplace=True)
+    iv = bin_stats['iv'].sum()
+    plt.figure(figsize=(10, 6))
+    bin_stats[['good_dist', 'bad_dist']].plot(kind='bar', stacked=True)
+    plt.title(f'Good/Bad Ratio for {feature} (IV={iv:.4f})')
+    plt.ylabel('Ratio')
+    plt.xlabel('Bins')
+    buffer = BytesIO()
+    plt.savefig(buffer, format='png')
+    buffer.seek(0)
+    image_png = buffer.getvalue()
+    buffer.close()
+    image_base64 = base64.b64encode(image_png).decode('utf-8')
+    woe_table = bin_stats[['good', 'bad', 'good_dist', 'bad_dist', 'woe', 'iv']]
+    return iv, woe_table, image_base64
+
+def generate_html_report(features, df, label, output_html="iv_report.html"):
+    for feature in features:
+        iv, woe_table, img_base64 = calculate_woe_iv(df, feature, label, min_bin_size=0.01)
+        html_content += f"<h2>{feature} - IV: {iv:.4f}</h2>"
+        html_content += f'<img src="data:image/png;base64,{img_base64}" /><br>'
+        html_content += woe_table.to_html()
+    html_content += "</body></html>"
+    with open(output_html, "w") as f:
+        f.write(html_content)
