@@ -1168,11 +1168,11 @@ class trainXGBbinary:
         bst = xgb.train(self.params, dtrain, num_round, evallist, evals_result=evals_result, early_stopping_rounds=10)
         self.model = bst
         return evals_result, bst
-    def eval_model(self, valid_df, features, label, preict=False):
+    def eval_model(self, valid_df, features, label, preict):
         dvalid = xgb.DMatrix(valid_df[features], label=valid_df[label])
         y_pred_proba = self.model.predict(dvalid)
         y_pred = [1 if prob > 0.5 else 0 for prob in y_pred_proba]  # set as 0.5 
-        accuracy, precision, recall, f1, auc = self.calculate_metrics(valid_df[label].values, y_pred, y_pred_proba, preict=preict)
+        accuracy, precision, recall, f1, auc = self.calculate_metrics(valid_df[label].values, y_pred, y_pred_proba, preict)
         result = {
             'Accuracy': accuracy,
             'Precision': precision,
