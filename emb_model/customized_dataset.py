@@ -1168,11 +1168,11 @@ class trainXGBbinary:
         bst = xgb.train(self.params, dtrain, num_round, evallist, evals_result=evals_result, early_stopping_rounds=10)
         self.model = bst
         return evals_result, bst
-    def eval_model(self, valid_df, features, label):
+    def eval_model(self, valid_df, features, label, preict=False):
         dvalid = xgb.DMatrix(valid_df[features], label=valid_df[label])
         y_pred_proba = self.model.predict(dvalid)
         y_pred = [1 if prob > 0.5 else 0 for prob in y_pred_proba]  # set as 0.5 
-        accuracy, precision, recall, f1, auc = self.calculate_metrics(valid_df[label].values, y_pred, y_pred_proba)
+        accuracy, precision, recall, f1, auc = self.calculate_metrics(valid_df[label].values, y_pred, y_pred_proba, preict=preict)
         result = {
             'Accuracy': accuracy,
             'Precision': precision,
@@ -1181,24 +1181,25 @@ class trainXGBbinary:
             'AUC': auc
         }
         return result
-    def calculate_metrics(self, y_true, y_pred, y_pred_proba):
+    def calculate_metrics(self, y_true, y_pred, y_pred_proba, preict=False):
         accuracy = accuracy_score(y_true, y_pred)
         precision = precision_score(y_true, y_pred)
         recall = recall_score(y_true, y_pred)
         f1 = f1_score(y_true, y_pred)
         auc = roc_auc_score(y_true, y_pred_proba)
         # ROC curve
-        fpr, tpr, thresholds = roc_curve(y_true, y_pred_proba)
-        plt.figure()
-        plt.plot(fpr, tpr, color='darkorange', lw=2, label=f'ROC curve (AUC = {auc:.2f})')
-        plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
-        plt.xlim([0.0, 1.0])
-        plt.ylim([0.0, 1.05])
-        plt.xlabel('False Positive Rate')
-        plt.ylabel('True Positive Rate')
-        plt.title('Receiver Operating Characteristic (ROC) Curve')
-        plt.legend(loc="lower right")
-        plt.show()
+        if preict == False:
+            fpr, tpr, thresholds = roc_curve(y_true, y_pred_proba)
+            plt.figure()
+            plt.plot(fpr, tpr, color='darkorange', lw=2, label=f'ROC curve (AUC = {auc:.2f})')
+            plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
+            plt.xlim([0.0, 1.0])
+            plt.ylim([0.0, 1.05])
+            plt.xlabel('False Positive Rate')
+            plt.ylabel('True Positive Rate')
+            plt.title('Receiver Operating Characteristic (ROC) Curve')
+            plt.legend(loc="lower right")
+            plt.show()
         return accuracy, precision, recall, f1, auc
     def get_env_file(self):
         resource_path = pkg_resources.resource_filename(__name__, f'resources/classification_xgb_env.yaml')
