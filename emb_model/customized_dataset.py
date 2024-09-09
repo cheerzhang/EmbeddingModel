@@ -1479,11 +1479,15 @@ def calculate_woe_iv(df, feature, label, bins=10, fillna_value=-999, min_bin_siz
 
 def generate_html_report(features, df, label, output_html="iv_report.html"):
     html_content = '<html><head><meta charset="UTF-8"><style>table {border-collapse: collapse; width: 100%;} th, td {border: 1px solid black; padding: 8px; text-align: left;} th {background-color: #f2f2f2;} .container {display: flex; align-items: flex-start;} .chart, .table {flex: 1; margin: 10px;}</style></head><body>'
+    feature_array = []
+    iv_array = []
     for feature in features:
         iv, woe_table, img_base64 = calculate_woe_iv(df, feature, label, min_bin_size=0.01)
         # html_content += f"<h2>{feature} - IV: {iv:.4f}</h2>"
         # html_content += f'<img src="data:image/png;base64,{img_base64}" /><br>'
         # html_content += woe_table.to_html()
+        feature_array.append(feature)
+        iv_array.append(iv)
         html_content += f"""
         <div class="container">
             <div class="chart">
@@ -1496,6 +1500,12 @@ def generate_html_report(features, df, label, output_html="iv_report.html"):
             </div>
         </div>
         """
+    iv_df = pd.DataFrame({
+        'feature': feature_array,
+        'IV': iv_array
+    })
+    iv_df = iv_df.sort_values()
+    html_content += f'<div>{iv_df.to_html(index=True)}</div>'
     html_content += '</body></html>'
     with open(output_html, "w") as f:
         f.write(html_content)
