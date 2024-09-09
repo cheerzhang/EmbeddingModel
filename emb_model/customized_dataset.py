@@ -1504,7 +1504,7 @@ def generate_html_report(features, df, label, output_html="iv_report.html"):
         'feature': feature_array,
         'IV': iv_array
     })
-    iv_df = iv_df.sort_values()
+    iv_df = iv_df.sort_values(by='IV')
     html_content += f'<div>{iv_df.to_html(index=True)}</div>'
     html_content += '</body></html>'
     with open(output_html, "w") as f:
