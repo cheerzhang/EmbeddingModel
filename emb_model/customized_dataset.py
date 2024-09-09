@@ -1469,6 +1469,7 @@ def calculate_woe_iv(df, feature, label, bins=10, fillna_value=-999, min_bin_siz
     plt.title(f'Good/Bad Ratio for {feature} (IV={iv:.4f})')
     plt.ylabel('Ratio')
     plt.xlabel('Bins')
+    plt.close()
     buffer = BytesIO()
     plt.savefig(buffer, format='png')
     buffer.seek(0)
