@@ -965,6 +965,12 @@ def get_week_range(date, days=7):
     end_of_week = pd.Timestamp(end_of_week).replace(hour=0, minute=0, second=0, microsecond=0)
     return start_of_week, end_of_week
 
+def get_month_range(date):
+    """ input a date, return the start month date and end month dat """
+    start_of_month = pd.Timestamp(date.replace(day=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+    next_month = (start_of_month + pd.DateOffset(months=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+    end_of_month = next_month - timedelta(days=1)
+    return start_of_month, end_of_month
 
 def get_week_starts(df, date_column):
     """ input a df, return the week start days array of the df """
